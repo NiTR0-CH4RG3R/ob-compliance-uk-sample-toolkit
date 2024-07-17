@@ -15,6 +15,7 @@
     </modules>
 
     <artifactId>components</artifactId>
+    <packaging>pom</packaging>
 
     <name>WSO2 Open Banking UK Toolkit</name>
     <description>WSO2 Open Banking Toolkit for UK Specification</description>
