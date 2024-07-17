@@ -13,6 +13,14 @@
     <artifactId>com.wso2.openbanking.uk.gateway</artifactId>
     <name>WSO2 Open Banking UK Toolkit - Gateway Module</name>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
+            <version>${org.wso2.carbon.apimgt.version}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
