@@ -1,6 +1,7 @@
 package com.wso2.openbanking.uk.gateway.internal;
 
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
+import com.wso2.openbanking.uk.gateway.handler.dcr.DCRHandler;
 
 /**
  * This class holds the data generated at runtime required for the gateway component.
@@ -31,5 +32,6 @@ public class GatewayDataHolder {
 
     private void constructHandlerChain() {
         handlerChain = new OpenBankingAPIHandler();
+        handlerChain.setNextHandler(new DCRHandler());
     }
 }
