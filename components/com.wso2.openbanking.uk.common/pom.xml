@@ -13,6 +13,13 @@
     <name>WSO2 Open Banking UK Toolkit - Common Module</name>
     <description>All the common components used by all the modules in the toolkit will be located here.</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
