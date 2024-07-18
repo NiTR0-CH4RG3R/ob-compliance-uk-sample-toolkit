@@ -64,6 +64,22 @@
                 <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
                 <version>${org.wso2.carbon.apimgt.version}</version>
             </dependency>
+
+            <!-- Toolkit Components! -->
+            <!--
+                Let's put all the toolkit components to the dependencyManagement, so the other modules can
+                reference them easily, and we can manage the version from here.
+            -->
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>com.wso2.openbanking.uk.common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>com.wso2.openbanking.uk.gateway</artifactId>
+                <version>${project.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

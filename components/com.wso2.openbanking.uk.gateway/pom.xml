@@ -18,6 +18,10 @@
             <groupId>org.wso2.carbon.apimgt</groupId>
             <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.parent.groupId}</groupId>
+            <artifactId>com.wso2.openbanking.uk.common</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
