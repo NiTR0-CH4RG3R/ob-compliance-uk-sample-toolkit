@@ -12,6 +12,7 @@
 
     <modules>
         <module>com.wso2.openbanking.uk.gateway</module>
+        <module>com.wso2.openbanking.uk.common</module>
     </modules>
 
     <artifactId>components</artifactId>
