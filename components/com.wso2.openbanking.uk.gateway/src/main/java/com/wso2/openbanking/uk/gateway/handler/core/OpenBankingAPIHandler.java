@@ -1,5 +1,7 @@
 package com.wso2.openbanking.uk.gateway.handler.core;
 
+import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
+import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
@@ -30,7 +32,7 @@ public class OpenBankingAPIHandler {
             if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
                 return preProcessRequest(requestContextDTO);
             }
-        } catch (Exception e) {
+        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
             log.error("Error occurred while processing the request", e);
         }
 
@@ -46,7 +48,7 @@ public class OpenBankingAPIHandler {
             if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
                 return postProcessRequest(requestContextDTO);
             }
-        } catch (Exception e) {
+        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
             log.error("Error occurred while processing the request", e);
         }
 
@@ -62,7 +64,7 @@ public class OpenBankingAPIHandler {
             if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
                 return preProcessResponse(responseContextDTO);
             }
-        } catch (Exception e) {
+        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
             log.error("Error occurred while processing the request", e);
         }
 
@@ -78,7 +80,7 @@ public class OpenBankingAPIHandler {
             if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
                 return postProcessResponse(responseContextDTO);
             }
-        } catch (Exception e) {
+        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
             log.error("Error occurred while processing the request", e);
         }
 
@@ -89,23 +91,28 @@ public class OpenBankingAPIHandler {
         return null;
     }
 
-    protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
+    protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO)
+            throws OpenBankingAPIHandlerException {
         return false;
     }
 
-    protected ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO) {
+    protected ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO)
+            throws OpenBankingAPIHandlerException {
         return null;
     }
 
-    protected ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO) {
+    protected ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO)
+            throws OpenBankingAPIHandlerException {
         return null;
     }
 
-    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) {
+    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO)
+            throws OpenBankingAPIHandlerException {
         return null;
     }
 
-    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO) {
+    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
+            throws OpenBankingAPIHandlerException {
         return null;
     }
 }

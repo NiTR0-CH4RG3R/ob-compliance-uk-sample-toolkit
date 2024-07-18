@@ -1,6 +1,7 @@
 package com.wso2.openbanking.uk.gateway.handler.dcr;
 
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
+import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
@@ -17,30 +18,35 @@ public class DCRHandler extends OpenBankingAPIHandler {
     private static final Log log = LogFactory.getLog(DCRHandler.class);
 
     @Override
-    protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
+    protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO)
+            throws OpenBankingAPIHandlerException {
         return msgInfoDTO.getResource().toLowerCase(Locale.getDefault()).contains("/register");
     }
 
     @Override
-    protected ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO) {
+    protected ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO)
+            throws OpenBankingAPIHandlerException {
         log.debug("DCRHandler preProcessRequest");
         return null;
     }
 
     @Override
-    protected ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO) {
+    protected ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO)
+            throws OpenBankingAPIHandlerException {
         log.debug("DCRHandler postProcessRequest");
         return null;
     }
 
     @Override
-    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) {
+    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO)
+            throws OpenBankingAPIHandlerException {
         log.debug("DCRHandler preProcessResponse");
         return null;
     }
 
     @Override
-    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO) {
+    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
+            throws OpenBankingAPIHandlerException {
         log.debug("DCRHandler postProcessResponse");
         return null;
     }
