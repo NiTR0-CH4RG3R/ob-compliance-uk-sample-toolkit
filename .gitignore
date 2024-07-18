@@ -33,3 +33,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+### Toolkit Specific Stuff ###
+.support-files/
