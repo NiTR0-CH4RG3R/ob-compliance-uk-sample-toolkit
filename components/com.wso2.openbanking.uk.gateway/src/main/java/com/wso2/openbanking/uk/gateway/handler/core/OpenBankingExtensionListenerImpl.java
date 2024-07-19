@@ -1,6 +1,6 @@
 package com.wso2.openbanking.uk.gateway.handler.core;
 
-import com.wso2.openbanking.uk.gateway.internal.GatewayDataHolder;
+import com.wso2.openbanking.uk.gateway.config.GatewayDataHolder;
 import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;

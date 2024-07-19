@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.internal;
+package com.wso2.openbanking.uk.gateway.constants;
 
 public class GatewayConstants {
     // Keys for the URL map

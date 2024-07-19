@@ -1,7 +1,8 @@
-package com.wso2.openbanking.uk.gateway.internal;
+package com.wso2.openbanking.uk.gateway.config;
 
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
 import com.wso2.openbanking.uk.gateway.handler.dcr.DCRHandler;
+import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
 
 import java.util.HashMap;
 import java.util.Map;
