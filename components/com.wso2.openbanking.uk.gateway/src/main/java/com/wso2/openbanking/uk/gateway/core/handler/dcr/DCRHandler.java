@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.handler.dcr;
+package com.wso2.openbanking.uk.gateway.core.handler.dcr;
 
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
 import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
