@@ -214,6 +214,11 @@
                         </execution>
                     </executions>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven.checkstyle.plugin.version}</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -231,6 +236,8 @@
         <com.h3xstream.findsecbugs.version>1.12.0</com.h3xstream.findsecbugs.version>
 
         <jacoco.version>0.8.10</jacoco.version>
+
+        <maven.checkstyle.plugin.version>3.4.0</maven.checkstyle.plugin.version>
 
         <org.wso2.carbon.apimgt.version>9.29.120</org.wso2.carbon.apimgt.version>
     </properties>
