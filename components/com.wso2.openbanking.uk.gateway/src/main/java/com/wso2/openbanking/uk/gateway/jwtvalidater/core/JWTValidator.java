@@ -15,7 +15,7 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.wso2.openbanking.uk.gateway.jwtvalidater.exception.JWTValidatorRuntimeException;
 import com.wso2.openbanking.uk.gateway.jwtvalidater.interfaces.JWTValidatorConfigProvider;
-import org.json.simple.JSONObject;
+import net.minidev.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -214,6 +214,11 @@ public class JWTValidator {
         }
     }
 
+    public String getJSONString() {
+        Map<String, Object> claims = getClaims();
+        return new JSONObject(claims).toJSONString();
+    }
+
     private static boolean validateJwt(String jwt) {
         // Lambda expression to check if a string is Base64 URL encoded
         Function<String, Boolean> isBase64UrlEncoded = str -> {
@@ -250,7 +255,6 @@ public class JWTValidator {
                 return false;
             }
         }
-
         return true;
     }
 
