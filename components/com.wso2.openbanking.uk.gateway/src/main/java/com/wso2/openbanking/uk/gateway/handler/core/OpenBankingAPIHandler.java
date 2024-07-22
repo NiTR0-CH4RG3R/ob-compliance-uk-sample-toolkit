@@ -1,14 +1,16 @@
 package com.wso2.openbanking.uk.gateway.handler.core;
 
+import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeader;
+import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
-import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
-import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
-import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
-import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
-import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
+import org.json.JSONException;
+import org.json.XML;
+import org.wso2.carbon.apimgt.common.gateway.dto.*;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 /**
  * This class is the base class for all the Open Banking API handler nodes in the handler chain. Any new handler that
@@ -28,12 +30,15 @@ public class OpenBankingAPIHandler {
     }
 
     public ExtensionResponseDTO handlePreProcessRequest(RequestContextDTO requestContextDTO) {
-        try {
-            if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
-                return preProcessRequest(requestContextDTO);
+        if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
+            ExtensionResponseDTO responseDTO = null;
+            try {
+                 responseDTO = preProcessRequest(requestContextDTO);
+                 return createContinueExtensionResponseDTOFromExtensionPayload(responseDTO);
+            } catch (OpenBankingAPIHandlerException e) {
+                log.error("Error occurred in the pre-auth-request-processing step!", e);
+                return createErrorExtensionResponseDTO(requestContextDTO.getMsgInfo());
             }
-        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
-            log.error("Error occurred while processing the request", e);
         }
 
         if (nextHandler != null) {
@@ -44,12 +49,15 @@ public class OpenBankingAPIHandler {
     }
 
     public ExtensionResponseDTO handlePostProcessRequest(RequestContextDTO requestContextDTO) {
-        try {
-            if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
-                return postProcessRequest(requestContextDTO);
+        if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
+            ExtensionResponseDTO responseDTO = null;
+            try {
+                responseDTO = postProcessRequest(requestContextDTO);
+                return createContinueExtensionResponseDTOFromExtensionPayload(responseDTO);
+            } catch (OpenBankingAPIHandlerException e) {
+                log.error("Error occurred in the post-auth-request-processing step!", e);
+                return createErrorExtensionResponseDTO(requestContextDTO.getMsgInfo());
             }
-        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
-            log.error("Error occurred while processing the request", e);
         }
 
         if (nextHandler != null) {
@@ -60,12 +68,15 @@ public class OpenBankingAPIHandler {
     }
 
     public ExtensionResponseDTO handlePreProcessResponse(ResponseContextDTO responseContextDTO) {
-        try {
-            if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
-                return preProcessResponse(responseContextDTO);
+        if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
+            ExtensionResponseDTO responseDTO = null;
+            try {
+                responseDTO = preProcessResponse(responseContextDTO);
+                return createContinueExtensionResponseDTOFromExtensionPayload(responseDTO);
+            } catch (OpenBankingAPIHandlerException e) {
+                log.error("Error occurred in the pre-auth-response-processing step!", e);
+                return createErrorExtensionResponseDTO(responseContextDTO.getMsgInfo());
             }
-        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
-            log.error("Error occurred while processing the request", e);
         }
 
         if (nextHandler != null) {
@@ -76,12 +87,15 @@ public class OpenBankingAPIHandler {
     }
 
     public ExtensionResponseDTO handlePostProcessResponse(ResponseContextDTO responseContextDTO) {
-        try {
-            if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
-                return postProcessResponse(responseContextDTO);
+        if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
+            ExtensionResponseDTO responseDTO = null;
+            try {
+                responseDTO = postProcessResponse(responseContextDTO);
+                return createContinueExtensionResponseDTOFromExtensionPayload(responseDTO);
+            } catch (OpenBankingAPIHandlerException e) {
+                log.error("Error occurred in the post-auth-response-processing step!", e);
+                return createErrorExtensionResponseDTO(responseContextDTO.getMsgInfo());
             }
-        } catch (OpenBankingAPIHandlerException | OpenBankingAPIHandlerRuntimeException e) {
-            log.error("Error occurred while processing the request", e);
         }
 
         if (nextHandler != null) {
@@ -91,8 +105,7 @@ public class OpenBankingAPIHandler {
         return null;
     }
 
-    protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO)
-            throws OpenBankingAPIHandlerException {
+    protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
         return false;
     }
 
@@ -114,5 +127,71 @@ public class OpenBankingAPIHandler {
     protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
             throws OpenBankingAPIHandlerException {
         return null;
+    }
+
+    // Some utility functions
+
+    protected static String getPayload(MsgInfoDTO msgInfoDTO) {
+        String contentType = msgInfoDTO.getHeaders().get(HttpHeader.CONTENT_TYPE);
+
+        if (contentType == null) {
+            return null;
+        }
+
+        if (msgInfoDTO.getPayloadHandler() == null) {
+            return null;
+        }
+
+        String payload = null;
+        try {
+            payload = msgInfoDTO.getPayloadHandler().consumeAsString();
+        } catch (Exception e) {
+            return null;
+        }
+
+        String[] xmlExtractionNeededPayloadTypes = {
+                HttpHeaderContentType.APPLICATION_JWT,
+                HttpHeaderContentType.APPLICATION_JOSE
+        };
+
+        for (String type : xmlExtractionNeededPayloadTypes) {
+            if (contentType.startsWith(type)) {
+                try {
+                    payload = XML
+                            .toJSONObject(payload)
+                            .getJSONObject("soapenv:Body")
+                            .getJSONObject("text")
+                            .getString("content");
+                    return payload;
+                } catch (JSONException e) {
+                    return null;
+                }
+            }
+        }
+
+        return payload;
+    }
+
+    private static ExtensionResponseDTO createErrorExtensionResponseDTO(MsgInfoDTO msgInfoDTO) {
+        ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
+        extensionResponseDTO.setPayload(
+                new ByteArrayInputStream(
+                        Objects.requireNonNull(getPayload(msgInfoDTO)).getBytes(StandardCharsets.UTF_8)
+                )
+        );
+        extensionResponseDTO.setHeaders(msgInfoDTO.getHeaders());
+        extensionResponseDTO.setResponseStatus(ExtensionResponseStatus.RETURN_ERROR.toString());
+        extensionResponseDTO.setStatusCode(500);
+        return extensionResponseDTO;
+    }
+
+    private static ExtensionResponseDTO createContinueExtensionResponseDTOFromExtensionPayload(
+            ExtensionResponseDTO extensionResponseDTO
+    ) {
+        if (extensionResponseDTO == null) {
+            return null;
+        }
+        extensionResponseDTO.setResponseStatus(ExtensionResponseStatus.CONTINUE.toString());
+        return extensionResponseDTO;
     }
 }
