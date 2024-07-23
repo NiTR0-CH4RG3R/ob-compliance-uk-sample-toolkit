@@ -1,6 +1,7 @@
-package com.wso2.openbanking.uk.gateway.core.main;
+package com.wso2.openbanking.uk.gateway.core.impl;
 
-import com.wso2.openbanking.uk.gateway.common.config.GatewayDataHolder;
+import com.wso2.openbanking.uk.gateway.core.handler.dcr.DCRHandler;
+import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
 import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
@@ -10,36 +11,37 @@ import org.wso2.carbon.apimgt.common.gateway.extensionlistener.ExtensionListener
  * This class is the implementation of the ExtensionListener interface for the Open Banking API.
  */
 public class OpenBankingExtensionListenerImpl implements ExtensionListener {
+
+    private OpenBankingAPIHandler handlerChain = null;
+
+    public OpenBankingExtensionListenerImpl() {
+        constructHandlerChain();
+    }
+
+    private void constructHandlerChain() {
+        handlerChain = new OpenBankingAPIHandler();
+        handlerChain
+                .setNextHandler(new DCRHandler());
+    }
+
     @Override
     public ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO) {
-        return GatewayDataHolder
-                .getInstance()
-                .getHandlerChain()
-                .handlePreProcessRequest(requestContextDTO);
+        return handlerChain.handlePreProcessRequest(requestContextDTO);
     }
 
     @Override
     public ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO) {
-        return GatewayDataHolder
-                .getInstance()
-                .getHandlerChain()
-                .handlePostProcessRequest(requestContextDTO);
+        return handlerChain.handlePostProcessRequest(requestContextDTO);
     }
 
     @Override
     public ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) {
-        return GatewayDataHolder
-                .getInstance()
-                .getHandlerChain()
-                .handlePreProcessResponse(responseContextDTO);
+        return handlerChain.handlePreProcessResponse(responseContextDTO);
     }
 
     @Override
     public ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO) {
-        return GatewayDataHolder
-                .getInstance()
-                .getHandlerChain()
-                .handlePostProcessResponse(responseContextDTO);
+        return handlerChain.handlePostProcessResponse(responseContextDTO);
     }
 
     @Override

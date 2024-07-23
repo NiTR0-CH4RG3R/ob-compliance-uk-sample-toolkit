@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.apimapplication.core;
+package com.wso2.openbanking.uk.gateway.core.handler.dcr.apimapplication;
 
 
 public class APIMApplication {

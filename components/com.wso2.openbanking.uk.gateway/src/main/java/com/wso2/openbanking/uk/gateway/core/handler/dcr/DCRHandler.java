@@ -4,8 +4,8 @@ import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeader;
 import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
 import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
-import com.wso2.openbanking.uk.gateway.jwtvalidater.core.JWTValidator;
-import com.wso2.openbanking.uk.gateway.jwtvalidater.exception.JWTValidatorRuntimeException;
+import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidator;
+import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidatorRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.apimgt.common.gateway.dto.*;
@@ -78,12 +78,18 @@ public class DCRHandler extends OpenBankingAPIHandler {
             }
 
             // Validate the request payload against the JWKSetEndpoint
+            boolean isValidSignature = false;
             try {
-                requestPayloadValidator.validateSignatureUsingJWKS(jwkSetEndpoint);
+                isValidSignature = requestPayloadValidator.validateSignatureUsingJWKS(jwkSetEndpoint);
             } catch (JWTValidatorRuntimeException e) {
                 log.error("Error occurred while validating the request payload signature", e);
                 throw new OpenBankingAPIHandlerException(
                         "Error occurred while validating the request payload signature", e);
+            }
+
+            if (!isValidSignature) {
+                log.error("Invalid signature in the request payload");
+                throw new OpenBankingAPIHandlerException("Invalid signature in the request payload");
             }
 
             // Set the modified payload to the request context
@@ -107,9 +113,9 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         // If the request is a GET, PUT, or DELETE request, then the clientId sent in the path should be verified.
         if(
-                HTTP_METHOD_GET.equalsIgnoreCase(httpMethod) ||
-                HTTP_METHOD_PUT.equalsIgnoreCase(httpMethod) ||
-                HTTP_METHOD_DELETE.equalsIgnoreCase(httpMethod)
+                httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_GET) ||
+                        httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_PUT) ||
+                        httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_DELETE)
         ) {
             String clientIdSentInRequest = extractPathVariableSentAsLastSegment(
                     requestContextDTO
@@ -131,8 +137,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
         String modifiedPayload = getPayload(requestContextDTO.getMsgInfo());
 
         if (
-                HTTP_METHOD_POST.equalsIgnoreCase(httpMethod) ||
-                HTTP_METHOD_PUT.equalsIgnoreCase(httpMethod)
+                httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_POST) ||
+                        httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_PUT)
         ) {
             // TODO : Map the parameters coming in the request payload to the IS DCR API request parameters
         }

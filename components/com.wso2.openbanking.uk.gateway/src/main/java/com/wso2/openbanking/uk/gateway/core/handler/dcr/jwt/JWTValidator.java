@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.jwtvalidater.core;
+package com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSVerifier;
@@ -13,8 +13,6 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-import com.wso2.openbanking.uk.gateway.jwtvalidater.exception.JWTValidatorRuntimeException;
-import com.wso2.openbanking.uk.gateway.jwtvalidater.interfaces.JWTValidatorConfigProvider;
 import net.minidev.json.JSONObject;
 
 import java.net.MalformedURLException;
@@ -39,29 +37,15 @@ public class JWTValidator {
     private int connectionTimeout = 0;
     private int readTimeout = 0;
 
-    public JWTValidator(JWTValidatorConfigProvider configProvider, String jwt) {
+    public JWTValidator(String jwt) {
         if (!validateJwt(jwt)) {
             throw new IllegalArgumentException("Invalid JWT");
         }
 
         this.jwt = jwt;
 
-        if (configProvider != null) {
-            connectionTimeout = configProvider.getConnectionTimeout();
-            readTimeout = configProvider.getReadTimeout();
-        }
-
-        if (connectionTimeout == 0) {
-            connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-        }
-
-        if (readTimeout == 0) {
-            readTimeout = DEFAULT_READ_TIMEOUT;
-        }
-    }
-
-    public JWTValidator(String jwt) {
-        this(null, jwt);
+        connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
+        readTimeout = DEFAULT_READ_TIMEOUT;
     }
 
     public String getJwt() {
