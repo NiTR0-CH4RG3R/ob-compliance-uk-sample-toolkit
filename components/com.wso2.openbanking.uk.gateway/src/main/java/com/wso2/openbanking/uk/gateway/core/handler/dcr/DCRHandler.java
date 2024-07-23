@@ -1,5 +1,6 @@
 package com.wso2.openbanking.uk.gateway.core.handler.dcr;
 
+import com.wso2.openbanking.uk.gateway.common.util.StringUtil;
 import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeader;
 import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
@@ -113,9 +114,9 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         // If the request is a GET, PUT, or DELETE request, then the clientId sent in the path should be verified.
         if(
-                httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_GET) ||
-                        httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_PUT) ||
-                        httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_DELETE)
+                StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_GET) ||
+                        StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_PUT)  ||
+                        StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_DELETE)
         ) {
             String clientIdSentInRequest = extractPathVariableSentAsLastSegment(
                     requestContextDTO
@@ -137,8 +138,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
         String modifiedPayload = getPayload(requestContextDTO.getMsgInfo());
 
         if (
-                httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_POST) ||
-                        httpMethod.toUpperCase(Locale.getDefault()).equals(HTTP_METHOD_PUT)
+                StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_POST)  ||
+                        StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_PUT)
         ) {
             // TODO : Map the parameters coming in the request payload to the IS DCR API request parameters
         }
