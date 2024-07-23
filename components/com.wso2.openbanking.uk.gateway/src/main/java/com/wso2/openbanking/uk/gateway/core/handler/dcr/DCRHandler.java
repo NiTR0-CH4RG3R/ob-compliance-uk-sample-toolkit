@@ -12,6 +12,7 @@ import org.wso2.carbon.apimgt.common.gateway.dto.*;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Locale;
 import java.util.Map;
 
@@ -26,7 +27,9 @@ public class DCRHandler extends OpenBankingAPIHandler {
     private static final String HTTP_METHOD_PUT = "PUT";
     private static final String HTTP_METHOD_DELETE = "DELETE";
 
-
+    // TODO : This is a temporary solution. Need to be removed once the proper authentication mechanism is implemented.
+    private static final String IS_USERNAME = "admin";
+    private static final String IS_PASSWORD = "admin";
 
     @Override
     protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
@@ -100,8 +103,57 @@ public class DCRHandler extends OpenBankingAPIHandler {
     @Override
     protected ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO)
             throws OpenBankingAPIHandlerException {
-        log.debug("DCRHandler postProcessRequest");
-        return null;
+        String httpMethod = requestContextDTO.getMsgInfo().getHttpMethod();
+
+        // If the request is a GET, PUT, or DELETE request, then the clientId sent in the path should be verified.
+        if(
+                HTTP_METHOD_GET.equalsIgnoreCase(httpMethod) ||
+                HTTP_METHOD_PUT.equalsIgnoreCase(httpMethod) ||
+                HTTP_METHOD_DELETE.equalsIgnoreCase(httpMethod)
+        ) {
+            String clientIdSentInRequest = extractPathVariableSentAsLastSegment(
+                    requestContextDTO
+                            .getMsgInfo()
+                            .getResource()
+            );
+
+            // Extract the clientId from the request token
+            String clientIdBoundToToken = requestContextDTO.getApiRequestInfo().getConsumerKey();
+
+            if (!clientIdSentInRequest.equals(clientIdBoundToToken)) {
+                log.error("Client ID in the request path does not match the client ID in the request token");
+                throw new OpenBankingAPIHandlerException(
+                        "Client ID in the request path does not match the client ID in the request token"
+                );
+            }
+        }
+
+        String modifiedPayload = getPayload(requestContextDTO.getMsgInfo());
+
+        if (
+                HTTP_METHOD_POST.equalsIgnoreCase(httpMethod) ||
+                HTTP_METHOD_PUT.equalsIgnoreCase(httpMethod)
+        ) {
+            // TODO : Map the parameters coming in the request payload to the IS DCR API request parameters
+        }
+
+        // TODO : Get the IS admin username and password from APIMConfigurationManager
+        String username = IS_USERNAME;
+        String password = IS_PASSWORD;
+
+        // Generate the Basic Auth header
+        String basicAuthHeader = generateBasicAuthHeader(username, password);
+
+        // Add the Basic Auth header to the request headers
+        Map<String, String> headers = requestContextDTO.getMsgInfo().getHeaders();
+        headers.put(HttpHeader.AUTHORIZATION, basicAuthHeader);
+
+        // Set the modified headers to the extension response
+        ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
+        extensionResponseDTO.setHeaders(headers);
+        extensionResponseDTO.setPayload(new ByteArrayInputStream(modifiedPayload.getBytes(StandardCharsets.UTF_8)));
+
+        return extensionResponseDTO;
     }
 
     @Override
@@ -116,5 +168,23 @@ public class DCRHandler extends OpenBankingAPIHandler {
             throws OpenBankingAPIHandlerException {
         log.debug("DCRHandler postProcessResponse");
         return null;
+    }
+
+    private static String extractPathVariableSentAsLastSegment(String resource) {
+        // If the resource ends with a "/", then remove it
+        if (resource.endsWith("/")) {
+            resource = resource.substring(0, resource.length() - 1);
+        }
+
+        // Split the resource by "/"
+        String[] segments = resource.split("/");
+
+        // Return the last segment
+        return segments[segments.length - 1];
+    }
+
+    private static String generateBasicAuthHeader(String username, String password) {
+        String credentials = username + ":" + password;
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
 }
