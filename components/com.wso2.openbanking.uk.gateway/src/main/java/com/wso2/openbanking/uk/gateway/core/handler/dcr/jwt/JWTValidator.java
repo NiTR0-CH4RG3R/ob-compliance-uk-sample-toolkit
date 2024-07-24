@@ -52,7 +52,7 @@ public class JWTValidator {
         return jwt;
     }
 
-    private boolean validateSignatureUsingPublicKey(String publicKey) {
+    public boolean validateSignatureUsingPublicKey(String publicKey) {
         // If the JWT is malformed or not in the correct format, return false
         if (!validateJwt()) {
             throw new JWTValidatorRuntimeException("Invalid JWT format");
