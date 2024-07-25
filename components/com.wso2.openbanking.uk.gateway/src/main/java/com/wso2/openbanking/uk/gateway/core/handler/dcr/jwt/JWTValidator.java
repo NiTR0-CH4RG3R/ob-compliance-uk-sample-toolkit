@@ -14,6 +14,8 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import net.minidev.json.JSONObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -29,6 +31,8 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public class JWTValidator {
+    private static final Log log = LogFactory.getLog(JWTValidator.class);
+
     // Default timeout values
     private static final int DEFAULT_CONNECTION_TIMEOUT = 3000;
     private static final int DEFAULT_READ_TIMEOUT = 3000;
@@ -39,6 +43,7 @@ public class JWTValidator {
 
     public JWTValidator(String jwt) {
         if (!validateJwt(jwt)) {
+            log.error("Invalid JWT");
             throw new IllegalArgumentException("Invalid JWT");
         }
 
@@ -55,7 +60,13 @@ public class JWTValidator {
     public boolean validateSignatureUsingPublicKey(String publicKey) {
         // If the JWT is malformed or not in the correct format, return false
         if (!validateJwt()) {
+            log.error("Invalid JWT format");
             throw new JWTValidatorRuntimeException("Invalid JWT format");
+        }
+
+        if (publicKey == null || publicKey.isEmpty()) {
+            log.error("Invalid public key");
+            throw new JWTValidatorRuntimeException("Invalid public key");
         }
 
         byte[] publicKeyData = null;
@@ -63,6 +74,7 @@ public class JWTValidator {
         try {
             publicKeyData = Base64.getDecoder().decode(publicKey);
         } catch (IllegalArgumentException e) {
+            log.error("Invalid public key", e);
             throw new JWTValidatorRuntimeException("Invalid public key", e);
         }
 
@@ -71,6 +83,7 @@ public class JWTValidator {
         try {
             signedJWT = SignedJWT.parse(jwt);
         } catch (ParseException e) {
+            log.error("Invalid JWT", e);
             throw new JWTValidatorRuntimeException("Invalid JWT", e);
         }
 
@@ -78,6 +91,7 @@ public class JWTValidator {
         String algorithm = signedJWT.getHeader().getAlgorithm().getName();
 
         if (!algorithm.startsWith("RS")) {
+            log.error("Invalid algorithm! Expected RSA algorithm");
             throw new JWTValidatorRuntimeException("Invalid algorithm! Expected RSA algorithm");
         }
 
@@ -87,6 +101,7 @@ public class JWTValidator {
         try {
             keyFactory = KeyFactory.getInstance("RSA");
         } catch (NoSuchAlgorithmException e) {
+            log.error("Invalid algorithm", e);
             throw new JWTValidatorRuntimeException("Invalid algorithm", e);
         }
 
@@ -95,6 +110,7 @@ public class JWTValidator {
         try {
             rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(spec);
         } catch (InvalidKeySpecException e) {
+            log.error("Invalid public key", e);
             throw new JWTValidatorRuntimeException("Invalid public key", e);
         }
 
@@ -103,6 +119,7 @@ public class JWTValidator {
         try {
             return signedJWT.verify(verifier);
         } catch (JOSEException e) {
+            log.error("Invalid JWT", e);
             throw new JWTValidatorRuntimeException("Invalid JWT", e);
         }
     }
@@ -110,6 +127,7 @@ public class JWTValidator {
     public boolean validateSignatureUsingJWKS(String jwkSetEndpoint) {
         // If the JWT is malformed or not in the correct format, return false
         if (!validateJwt()) {
+            log.error("Invalid JWT format");
             throw new JWTValidatorRuntimeException("Invalid JWT format");
         }
 
@@ -118,6 +136,7 @@ public class JWTValidator {
         try {
             signedJWT = SignedJWT.parse(jwt);
         } catch (ParseException e) {
+            log.error("Invalid JWT", e);
             throw new JWTValidatorRuntimeException("Invalid JWT", e);
         }
 
@@ -131,6 +150,7 @@ public class JWTValidator {
         try {
             jwkSetURL = new URL(jwkSetEndpoint);
         } catch (MalformedURLException e) {
+            log.error("Invalid JWKS endpoint", e);
             throw new JWTValidatorRuntimeException("Invalid JWKS endpoint", e);
         }
 
@@ -154,6 +174,7 @@ public class JWTValidator {
             jwtProcessor.process(signedJWT, new SimpleSecurityContext());
             return true;
         } catch (Exception e) {
+            log.debug("JWT Signature validation failed!", e);
             // If the processing fails, the JWT is invalid
             return false;
         }
@@ -167,6 +188,7 @@ public class JWTValidator {
         Map<String, Object> claims = getClaims();
 
         if (!claims.containsKey(key)) {
+            log.debug(String.format("Claim %s not found! Returning null...", key));
             return null;
         }
 
@@ -176,11 +198,15 @@ public class JWTValidator {
             return clazz.cast(claim);
         }
 
-        throw new JWTValidatorRuntimeException("Invalid claim type");
+        log.error(String.format("Invalid claim type! Expected %s, but found %s", clazz.getName(),
+                claim.getClass().getName()));
+        throw new JWTValidatorRuntimeException(String.format("Invalid claim type! Expected %s, but found %s",
+                clazz.getName(), claim.getClass().getName()));
     }
 
     public Map<String, Object> getClaims() {
         if (!validateJwt()) {
+            log.error("Invalid JWT format");
             throw new JWTValidatorRuntimeException("Invalid JWT format");
         }
 
@@ -188,12 +214,14 @@ public class JWTValidator {
         try {
             signedJWT = SignedJWT.parse(jwt);
         } catch (ParseException e) {
+            log.error("Invalid JWT", e);
             throw new JWTValidatorRuntimeException("Invalid JWT", e);
         }
 
         try {
             return signedJWT.getJWTClaimsSet().toJSONObject();
         } catch (ParseException e) {
+            log.error("Invalid JWT", e);
             throw new JWTValidatorRuntimeException("", e);
         }
     }
@@ -207,12 +235,14 @@ public class JWTValidator {
         // Lambda expression to check if a string is Base64 URL encoded
         Function<String, Boolean> isBase64UrlEncoded = str -> {
             if (str == null || str.isEmpty()) {
+                log.debug("Empty string");
                 return false;
             }
 
             // Base64 URL encoding allows only A-Z, a-z, 0-9, '-', and '_'
             Pattern base64UrlPattern = Pattern.compile("^[A-Za-z0-9_-]+$");
             if (!base64UrlPattern.matcher(str).matches()) {
+                log.debug("Invalid characters in the string");
                 return false;
             }
 
@@ -221,21 +251,25 @@ public class JWTValidator {
                 Base64.getUrlDecoder().decode(str + "==".substring(0, (4 - str.length() % 4) % 4));
                 return true;
             } catch (IllegalArgumentException e) {
+                log.debug("Invalid Base64 URL encoding", e);
                 return false;
             }
         };
 
         if (jwt == null || jwt.isEmpty()) {
+            log.debug("Empty JWT");
             return false;
         }
 
         String[] parts = jwt.split("\\.");
         if (parts.length != 3) {
+            log.debug("Invalid JWT format");
             return false;
         }
 
         for (String part : parts) {
             if (!isBase64UrlEncoded.apply(part)) {
+                log.debug("Invalid JWT format");
                 return false;
             }
         }
