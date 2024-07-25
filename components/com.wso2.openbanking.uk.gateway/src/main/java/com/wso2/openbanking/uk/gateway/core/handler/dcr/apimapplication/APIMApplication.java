@@ -10,7 +10,7 @@ public class APIMApplication {
     private static final String RESOURCE_DEV_PORTAL_APP_DELETE = "/api/am/devportal/v3/applications/{applicationId}";
     private static final String RESOURCE_DEV_PORTAL_APP_MAP_KEYS =
             "/api/am/devportal/v3/applications/{applicationId}/map-keys";
-    private static final String RESOURCE_DEV_PORTAL_API_LIST = "api/am/devportal/v3/apis";
+    private static final String RESOURCE_DEV_PORTAL_API_LIST = "/api/am/devportal/v3/apis";
     private static final String RESOURCE_DEV_PORTAL_API_LIST_SUBSCRIBE = "/api/am/devportal/v3/subscriptions/multiple";
 
     private final String amHost;
