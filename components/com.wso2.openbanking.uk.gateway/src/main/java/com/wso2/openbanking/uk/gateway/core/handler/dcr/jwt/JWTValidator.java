@@ -42,11 +42,6 @@ public class JWTValidator {
     private int readTimeout = 0;
 
     public JWTValidator(String jwt) {
-        if (!validateJwt(jwt)) {
-            log.error("Invalid JWT");
-            throw new IllegalArgumentException("Invalid JWT");
-        }
-
         this.jwt = jwt;
 
         connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
@@ -188,7 +183,8 @@ public class JWTValidator {
         Map<String, Object> claims = getClaims();
 
         if (!claims.containsKey(key)) {
-            log.debug(String.format("Claim %s not found! Returning null...", key));
+            log.debug(String.format("Claim %s not found! Returning null...",
+                    key.replaceAll("[\r\n]", "_")));
             return null;
         }
 
