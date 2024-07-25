@@ -49,6 +49,11 @@ public class DCRHandler extends OpenBankingAPIHandler {
             // Extract the request payload
             String requestPayload = getPayload(requestContextDTO.getMsgInfo());
 
+            if (requestPayload == null) {
+                log.error("Request payload is null");
+                throw new OpenBankingAPIHandlerException("Request payload is null");
+            }
+
             // Validate the JWT token in the request payload
             JWTValidator requestPayloadValidator = new JWTValidator(requestPayload);
             if (!requestPayloadValidator.validateJwt()) {
