@@ -205,16 +205,61 @@ public class DCRHandler extends OpenBankingAPIHandler {
     @Override
     protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO)
             throws OpenBankingAPIHandlerException {
+
+        ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
+
         String payload = getPayload(responseContextDTO.getMsgInfo());
-        debugPrintJsonString(payload);
-        return null;
+        extensionResponseDTO.setHeaders(responseContextDTO.getMsgInfo().getHeaders());
+
+        if (payload != null) {
+            extensionResponseDTO.setPayload(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
+        }
+
+        String httpMethod = responseContextDTO.getMsgInfo().getHttpMethod();
+
+        switch (httpMethod) {
+            case HTTP_METHOD_GET:
+                processResponseHttpMethodGet(extensionResponseDTO, responseContextDTO);
+                break;
+            case HTTP_METHOD_POST:
+                processResponseHttpMethodPost(extensionResponseDTO, responseContextDTO);
+                break;
+            case HTTP_METHOD_PUT:
+                processResponseHttpMethodPut(extensionResponseDTO, responseContextDTO);
+                break;
+            case HTTP_METHOD_DELETE:
+                processResponseHttpMethodDelete(extensionResponseDTO, responseContextDTO);
+                break;
+            default:
+                log.error("Unsupported HTTP method: " + StringUtil.sanitizeString(httpMethod));
+                throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + httpMethod);
+        }
+
+        return extensionResponseDTO;
     }
 
-    @Override
-    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
-            throws OpenBankingAPIHandlerException {
-        log.debug("DCRHandler postProcessResponse");
-        return null;
+    private void processResponseHttpMethodGet(
+            ExtensionResponseDTO extensionResponseDTO,
+            ResponseContextDTO responseContextDTO
+    ) throws OpenBankingAPIHandlerException {
+    }
+
+    private void processResponseHttpMethodPost(
+            ExtensionResponseDTO extensionResponseDTO,
+            ResponseContextDTO responseContextDTO
+    ) throws OpenBankingAPIHandlerException {
+    }
+
+    private void processResponseHttpMethodPut(
+            ExtensionResponseDTO extensionResponseDTO,
+            ResponseContextDTO responseContextDTO
+    ) throws OpenBankingAPIHandlerException {
+    }
+
+    private void processResponseHttpMethodDelete(
+            ExtensionResponseDTO extensionResponseDTO,
+            ResponseContextDTO responseContextDTO
+    ) throws OpenBankingAPIHandlerException {
     }
 
     private static String extractPathVariableSentAsLastSegment(String resource) {
