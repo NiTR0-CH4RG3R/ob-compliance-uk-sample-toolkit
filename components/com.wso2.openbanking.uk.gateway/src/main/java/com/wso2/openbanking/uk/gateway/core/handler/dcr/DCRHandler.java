@@ -1,6 +1,7 @@
 package com.wso2.openbanking.uk.gateway.core.handler.dcr;
 
 import com.wso2.openbanking.uk.gateway.common.util.StringUtil;
+import com.wso2.openbanking.uk.gateway.core.handler.dcr.isserviceprovider.ISServiceProvider;
 import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeader;
 import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
@@ -9,13 +10,15 @@ import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidator;
 import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidatorRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.common.gateway.dto.*;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * This class is the handler for the Dynamic Client Registration (DCR) API.
@@ -140,13 +143,40 @@ public class DCRHandler extends OpenBankingAPIHandler {
             }
         }
 
+        // Extract the payload and the headers from the request context
         String modifiedPayload = getPayload(requestContextDTO.getMsgInfo());
+        Map<String, String> headers = requestContextDTO.getMsgInfo().getHeaders();
 
         if (
                 StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_POST)  ||
                         StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_PUT)
         ) {
-            // TODO : Map the parameters coming in the request payload to the IS DCR API request parameters
+            if (modifiedPayload == null) {
+                log.error("Request payload is null");
+                throw new OpenBankingAPIHandlerException("Request payload is null");
+            }
+
+//            // Validate the request payload
+//            if (!validateRequestPayload(modifiedPayload)) {
+//                log.error("Invalid request payload");
+//                throw new OpenBankingAPIHandlerException("Invalid request payload");
+//            }
+
+            // Set the modified payload to the request context
+            modifiedPayload = ISServiceProvider.convertJsonStringToISDCRRequestJsonString(modifiedPayload);
+
+            if (modifiedPayload == null) {
+                log.error("Error occurred while mapping the request payload to the IS DCR API request");
+                throw new OpenBankingAPIHandlerException(
+                        "Error occurred while mapping the request payload to the IS DCR API request"
+                );
+            }
+
+            debugPrintJsonString(modifiedPayload);
+
+            // Set the Content-Type header to application/json
+            headers.replace(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
+
         }
 
         // TODO : Get the IS admin username and password from APIMConfigurationManager
@@ -157,13 +187,17 @@ public class DCRHandler extends OpenBankingAPIHandler {
         String basicAuthHeader = generateBasicAuthHeader(username, password);
 
         // Add the Basic Auth header to the request headers
-        Map<String, String> headers = requestContextDTO.getMsgInfo().getHeaders();
         headers.put(HttpHeader.AUTHORIZATION, basicAuthHeader);
 
-        // Set the modified headers to the extension response
         ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
+
+        // Set the modified headers to the extension response
         extensionResponseDTO.setHeaders(headers);
-        extensionResponseDTO.setPayload(new ByteArrayInputStream(modifiedPayload.getBytes(StandardCharsets.UTF_8)));
+
+        // Set the modified payload to the extension response
+        if (modifiedPayload != null) {
+            extensionResponseDTO.setPayload(new ByteArrayInputStream(modifiedPayload.getBytes(StandardCharsets.UTF_8)));
+        }
 
         return extensionResponseDTO;
     }
@@ -171,7 +205,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
     @Override
     protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO)
             throws OpenBankingAPIHandlerException {
-        log.debug("DCRHandler preProcessResponse");
+        String payload = getPayload(responseContextDTO.getMsgInfo());
+        debugPrintJsonString(payload);
         return null;
     }
 
@@ -197,6 +232,70 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
     private static String generateBasicAuthHeader(String username, String password) {
         String credentials = username + ":" + password;
-        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
+        return "Basic " + new String(
+                Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8
+        );
+    }
+
+    private static void debugPrintJsonString(String requestPayload) {
+        Function<String, String[]> jsonLineSplitter = jsonString ->  {
+            List<String> lines = new ArrayList<>();
+            StringBuilder currentLine = new StringBuilder();
+            int indentLevel = 0;
+            boolean inQuotes = false;
+
+            for (char c : jsonString.toCharArray()) {
+                // Handle quotes for string literals in JSON
+                if (c == '\"') {
+                    inQuotes = !inQuotes;
+                }
+
+                // Handle newline characters
+                if (c == '\n' || c == '\r') {
+                    continue;
+                }
+
+                // Handle opening braces and brackets outside of quotes
+                if (!inQuotes && (c == '{' || c == '[')) {
+                    currentLine.append(c);
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                    indentLevel++;
+                    currentLine.append(" ".repeat(indentLevel * 2));
+                    continue;
+                }
+
+                // Handle closing braces and brackets outside of quotes
+                if (!inQuotes && (c == '}' || c == ']')) {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                    indentLevel--;
+                    currentLine.append(" ".repeat(indentLevel * 2));
+                }
+
+                currentLine.append(c);
+
+                // Handle commas outside of quotes to split lines for objects and arrays
+                if (!inQuotes && c == ',') {
+                    lines.add(currentLine.toString());
+                    currentLine = new StringBuilder();
+                    currentLine.append(" ".repeat(indentLevel * 2));
+                }
+            }
+
+            // Add any remaining content in the buffer to the list
+            if (currentLine.length() > 0) {
+                lines.add(currentLine.toString());
+            }
+
+            // Convert the list to an array and return
+            return lines.toArray(new String[0]);
+        };
+
+        String[] jsonLines = jsonLineSplitter.apply(requestPayload);
+        for (String line : jsonLines) {
+            log.debug(line.replaceAll("[\r\n]", ""));
+        }
     }
 }
