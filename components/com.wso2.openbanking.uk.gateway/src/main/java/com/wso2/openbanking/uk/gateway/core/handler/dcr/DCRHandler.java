@@ -10,11 +10,7 @@ import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidator;
 import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidatorRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.common.gateway.dto.*;
-
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -231,7 +227,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
                 processResponseHttpMethodDelete(extensionResponseDTO, responseContextDTO);
                 break;
             default:
-                log.error("Unsupported HTTP method: " + StringUtil.sanitizeString(httpMethod));
+                String error = String.format("Unsupported HTTP method: %s", StringUtil.sanitizeString(httpMethod));
+                log.error(StringUtil.sanitizeString(error));
                 throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + httpMethod);
         }
 
