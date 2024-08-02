@@ -347,6 +347,52 @@ public class DevPortalRestApiManager {
         }
     }
 
+    public List<String> getSubscriptionsByApplicationId(String applicationId) {
+        authenticate();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("applicationId", applicationId);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Accept", "application/json");
+
+        GatewayHttpResponse response = null;
+
+        try {
+            response = client.send(new GatewayHttpRequest(
+                    "GET",
+                    concatParamsToUrl(amHost + REST_API_RESOURCE_SUBSCRIPTION, params),
+                    null,
+                    headers
+            ));
+        } catch (GatewayHttpClientRuntimeException e) {
+            log.error("Failed to get all subscriptions of an application", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to get all subscriptions of an application", e);
+        }
+
+        handleExpectedHttpStatusResponse(response, 200, "Failed to get all subscriptions of an application");
+
+        JSONObject responseJson = null;
+
+        try {
+            responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
+        } catch (ParseException e) {
+            log.error("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
+        }
+
+        JSONArray subscriptionsJson = (JSONArray) responseJson.get("list");
+
+        List<String> subscriptionIds = new ArrayList<>();
+
+        for (Object subscription : subscriptionsJson) {
+            subscriptionIds.add((String) ((JSONObject) subscription).get("subscriptionId"));
+        }
+
+        return subscriptionIds;
+    }
+
     public List<String> searchAPIsByTag(String tag) {
         authenticate();
 
