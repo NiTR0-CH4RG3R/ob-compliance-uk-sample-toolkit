@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.apimapplication;
+package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
 
 import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpClient;
 import org.testng.Assert;
@@ -12,9 +12,9 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 
-public class APIMApplicationManagerTest {
+public class DevPortalRestApiManagerTest {
 
-    private APIMApplicationManager apimApplicationManager;
+    private DevPortalRestApiManager devPortalRestApiManager;
 
     private String applicationId = null;
     private final String applicationName = "TestApplication10";
@@ -46,7 +46,7 @@ public class APIMApplicationManagerTest {
         String password = "admin";
 
         GatewayHttpClient gatewayHttpClient = new GatewayHttpClient();
-        apimApplicationManager = new APIMApplicationManager(gatewayHttpClient, amHost, username, password);
+        devPortalRestApiManager = new DevPortalRestApiManager(gatewayHttpClient, amHost, username, password);
     }
 
     @Test
@@ -62,7 +62,7 @@ public class APIMApplicationManagerTest {
                 null
         );
 
-        APIMApplication createdApplication = apimApplicationManager.createApplication(apimApplication);
+        APIMApplication createdApplication = devPortalRestApiManager.createApplication(apimApplication);
 
         Assert.assertNotNull(createdApplication.getApplicationId());
 
@@ -71,7 +71,7 @@ public class APIMApplicationManagerTest {
 
     @Test(dependsOnMethods = "createApplicationTest")
     public void retrieveApplicationTest() {
-        APIMApplication apimApplication = apimApplicationManager.retrieveApplication(applicationId);
+        APIMApplication apimApplication = devPortalRestApiManager.retrieveApplication(applicationId);
 
         Assert.assertNotNull(apimApplication);
         Assert.assertEquals(apimApplication.getApplicationId(), applicationId);
@@ -83,7 +83,7 @@ public class APIMApplicationManagerTest {
 
     @Test(dependsOnMethods = "retrieveApplicationTest")
     public void searchApplicationsByNameTest() {
-        APIMApplication[] apimApplications = apimApplicationManager.searchApplicationsByName(applicationName).toArray(new APIMApplication[0]);
+        APIMApplication[] apimApplications = devPortalRestApiManager.searchApplicationsByName(applicationName).toArray(new APIMApplication[0]);
 
         Assert.assertNotNull(apimApplications);
         Assert.assertTrue(apimApplications.length > 0);
@@ -110,7 +110,7 @@ public class APIMApplicationManagerTest {
                 null
         );
 
-        APIMApplication updatedApplication = apimApplicationManager.updateApplication(apimApplication);
+        APIMApplication updatedApplication = devPortalRestApiManager.updateApplication(apimApplication);
 
         Assert.assertNotNull(updatedApplication);
         Assert.assertEquals(updatedApplication.getApplicationId(), applicationId);
@@ -120,6 +120,6 @@ public class APIMApplicationManagerTest {
 
     @Test(dependsOnMethods = "updateApplicationTest")
     public void deleteApplicationTest() {
-        apimApplicationManager.deleteApplication(applicationId);
+        devPortalRestApiManager.deleteApplication(applicationId);
     }
 }

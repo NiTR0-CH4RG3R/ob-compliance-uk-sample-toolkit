@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.apimapplication;
+package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
 
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.apimapplication;
+package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
 
 
 import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayAbstractHttpClient;
@@ -17,8 +17,8 @@ import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class APIMApplicationManager {
-    private static final Log log = LogFactory.getLog(APIMApplicationManager.class);
+public class DevPortalRestApiManager {
+    private static final Log log = LogFactory.getLog(DevPortalRestApiManager.class);
 
     private static final String DEFAULT_AM_HOST = "https://localhost:9443";
     private static final String REST_API_RESOURCE_CLIENT_REGISTRATION = "/client-registration/v0.17/register";
@@ -28,7 +28,7 @@ public class APIMApplicationManager {
     private static final String DEFAULT_AM_USERNAME = "admin";
     private static final String DEFAULT_AM_PASSWORD = "admin";
 
-    private static final String AM_APPLICATION_CLIENT_NAME = "OpenBankingUK-APIMApplicationManager";
+    private static final String AM_APPLICATION_CLIENT_NAME = "OpenBankingUK-DevPortalRestApiManager";
 
     private final GatewayAbstractHttpClient client;
     private final String amHost;
@@ -42,7 +42,7 @@ public class APIMApplicationManager {
 
     private String accessToken;
 
-    public APIMApplicationManager(
+    public DevPortalRestApiManager(
             GatewayAbstractHttpClient client,
             String amHost,
             String amUsername,
@@ -58,15 +58,15 @@ public class APIMApplicationManager {
         this.amPassword = amPassword == null || amPassword.isBlank() ? DEFAULT_AM_PASSWORD : amPassword;
     }
 
-    public APIMApplicationManager(GatewayAbstractHttpClient client) {
+    public DevPortalRestApiManager(GatewayAbstractHttpClient client) {
         this(client, null, null, null);
     }
 
-    public APIMApplicationManager(GatewayAbstractHttpClient client, String amHost) {
+    public DevPortalRestApiManager(GatewayAbstractHttpClient client, String amHost) {
         this(client, amHost, null, null);
     }
 
-    public APIMApplication createApplication(APIMApplication application) throws APIMApplicationRuntimeException {
+    public APIMApplication createApplication(APIMApplication application) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, Object> body = new HashMap<>();
@@ -94,7 +94,7 @@ public class APIMApplicationManager {
             ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to create the application", e);
-            throw new APIMApplicationRuntimeException("Failed to create the application", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to create the application", e);
         }
 
         handleExpectedHttpStatusResponse(response, 201, "Failed to create the application");
@@ -105,13 +105,13 @@ public class APIMApplicationManager {
             responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
         } catch (ParseException e) {
             log.error("Error parsing the response", e);
-            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
         }
 
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public APIMApplication retrieveApplication(String applicationId) throws APIMApplicationRuntimeException {
+    public APIMApplication retrieveApplication(String applicationId) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
@@ -129,7 +129,7 @@ public class APIMApplicationManager {
             ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to retrieve the application", e);
-            throw new APIMApplicationRuntimeException("Failed to retrieve the application", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to retrieve the application", e);
         }
 
         handleExpectedHttpStatusResponse(response, 200, "Failed to retrieve the application");
@@ -140,13 +140,13 @@ public class APIMApplicationManager {
             responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
         } catch (ParseException e) {
             log.error("Error parsing the response", e);
-            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
         }
 
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public List<APIMApplication> searchApplicationsByName(String applicationName) throws APIMApplicationRuntimeException {
+    public List<APIMApplication> searchApplicationsByName(String applicationName) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> params = new HashMap<>();
@@ -167,7 +167,7 @@ public class APIMApplicationManager {
             ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to search applications by name", e);
-            throw new APIMApplicationRuntimeException("Failed to search applications by name", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to search applications by name", e);
         }
 
         handleExpectedHttpStatusResponse(response, 200, "Failed to search applications by name");
@@ -178,7 +178,7 @@ public class APIMApplicationManager {
             responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
         } catch (ParseException e) {
             log.error("Error parsing the response", e);
-            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
         }
 
         JSONArray applicationsJson = (JSONArray) responseJson.get("list");
@@ -192,7 +192,7 @@ public class APIMApplicationManager {
         return applications;
     }
 
-    public APIMApplication updateApplication(APIMApplication application) throws APIMApplicationRuntimeException {
+    public APIMApplication updateApplication(APIMApplication application) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, Object> body = new HashMap<>();
@@ -220,7 +220,7 @@ public class APIMApplicationManager {
             ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to update the application", e);
-            throw new APIMApplicationRuntimeException("Failed to update the application", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to update the application", e);
         }
 
         handleExpectedHttpStatusResponse(response, 200, "Failed to update the application");
@@ -231,13 +231,13 @@ public class APIMApplicationManager {
             responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
         } catch (ParseException e) {
             log.error("Error parsing the response", e);
-            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
         }
 
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public void deleteApplication(String applicationId) throws APIMApplicationRuntimeException {
+    public void deleteApplication(String applicationId) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
@@ -255,18 +255,18 @@ public class APIMApplicationManager {
             ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to delete the application", e);
-            throw new APIMApplicationRuntimeException("Failed to delete the application", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to delete the application", e);
         }
 
         handleExpectedHttpStatusResponse(response, 200, "Failed to delete the application");
     }
 
-    private void authenticate() throws APIMApplicationRuntimeException {
+    private void authenticate() throws DevPortalRestApiManagerRuntimeException {
         registerClient();
         generateTokens();
     }
 
-    private void registerClient() throws APIMApplicationRuntimeException {
+    private void registerClient() throws DevPortalRestApiManagerRuntimeException {
         Map<String, Object> body = new HashMap<>();
         body.put("callbackUrl", amHost);
         body.put("clientName", AM_APPLICATION_CLIENT_NAME);
@@ -289,7 +289,7 @@ public class APIMApplicationManager {
                     ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to register the client", e);
-            throw new APIMApplicationRuntimeException("Failed to register the client", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to register the client", e);
         }
 
         handleExpectedHttpStatusResponse(response, 200, "Failed to register the client");
@@ -300,14 +300,14 @@ public class APIMApplicationManager {
             responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
         } catch (ParseException e) {
             log.error("Error parsing the response", e);
-            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
         }
 
         clientId = (String) responseJson.get("clientId");
         clientSecret = (String) responseJson.get("clientSecret");
     }
 
-    private void generateTokens() throws APIMApplicationRuntimeException {
+    private void generateTokens() throws DevPortalRestApiManagerRuntimeException {
         Map<String, String> body = new HashMap<>();
         body.put("grant_type", "password");
         body.put("username", amUsername);
@@ -329,7 +329,7 @@ public class APIMApplicationManager {
             ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to generate tokens", e);
-            throw new APIMApplicationRuntimeException("Failed to generate tokens", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to generate tokens", e);
         }
 
         handleExpectedHttpStatusResponse(response, 200, "Failed to generate tokens");
@@ -340,7 +340,7 @@ public class APIMApplicationManager {
             responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
         } catch (ParseException e) {
             log.error("Error parsing the response", e);
-            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
         }
 
         accessToken = (String) responseJson.get("access_token");
@@ -389,7 +389,7 @@ public class APIMApplicationManager {
             GatewayHttpResponse response,
             int expectedHttpStatus,
             String errorMessage
-    ) throws APIMApplicationRuntimeException {
+    ) throws DevPortalRestApiManagerRuntimeException {
         if (response.getStatusCode() != expectedHttpStatus) {
             String error = String.format(
               "Expected status code %d, but received %d. Response Body : %s | %s",
@@ -399,7 +399,7 @@ public class APIMApplicationManager {
               errorMessage
             );
             log.error(error);
-            throw new APIMApplicationRuntimeException(error);
+            throw new DevPortalRestApiManagerRuntimeException(error);
         }
     }
 
