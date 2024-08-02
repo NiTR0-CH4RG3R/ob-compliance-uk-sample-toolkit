@@ -5,6 +5,7 @@ import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayAbstractH
 import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpClientRuntimeException;
 import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpRequest;
 import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpResponse;
+import com.wso2.openbanking.uk.gateway.common.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
@@ -24,6 +25,8 @@ public class DevPortalRestApiManager {
     private static final String REST_API_RESOURCE_CLIENT_REGISTRATION = "/client-registration/v0.17/register";
     private static final String REST_API_RESOURCE_TOKEN = "/oauth2/token";
     private static final String REST_API_RESOURCE_APPLICATION = "/api/am/devportal/v3/applications";
+    private static final String REST_API_RESOURCE_SUBSCRIPTION = "/api/am/devportal/v3/subscriptions";
+    private static final String REST_API_RESOURCE_APIS = "/api/am/devportal/v3/apis";
 
     private static final String DEFAULT_AM_USERNAME = "admin";
     private static final String DEFAULT_AM_PASSWORD = "admin";
@@ -190,6 +193,204 @@ public class DevPortalRestApiManager {
         }
 
         return applications;
+    }
+
+    public String mapApplicationKeys(
+            String applicationId,
+            String consumerKey,
+            String consumerSecret,
+            String keyManager,
+            boolean isSandbox
+    ) throws DevPortalRestApiManagerRuntimeException {
+        authenticate();
+
+        String keyType = isSandbox ? "SANDBOX" : "PRODUCTION";
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("consumerKey", consumerKey);
+        body.put("consumerSecret", consumerSecret);
+        body.put("keyManager", keyManager);
+        body.put("keyType", keyType);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Accept", "application/json");
+
+        GatewayHttpResponse response = null;
+
+        try {
+            response = client.send(new GatewayHttpRequest(
+                    "POST",
+                    amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId + "/map-keys",
+                    (new JSONObject(body)).toJSONString(),
+                    headers
+            ));
+        } catch (GatewayHttpClientRuntimeException e) {
+            log.error("Failed to map the application keys", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to map the application keys", e);
+        }
+
+        handleExpectedHttpStatusResponse(response, 200, "Failed to map the application keys");
+
+        JSONObject responseJson = null;
+
+        try {
+            responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
+        } catch (ParseException e) {
+            log.error("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
+        }
+
+//        String mode = (String) responseJson.get("mode");
+//
+//        if (!mode.equals("MAPPED")) {
+//            String error = StringUtil.sanitizeString(String.format(
+//                    "Failed to map the application keys. Mode : %s", mode
+//                    ));
+//            log.error(error);
+//            throw new DevPortalRestApiManagerRuntimeException(error);
+//        }
+
+//        String keyState = (String) responseJson.get("keyState");
+//
+//        if (!keyState.equals("APPROVED")) {
+//            String error = StringUtil.sanitizeString(String.format(
+//                    "Failed to map the application keys. Key State : %s", keyState
+//            ));
+//            log.error(error);
+//            throw new DevPortalRestApiManagerRuntimeException(error);
+//        }
+
+        String keyMappingId = (String) responseJson.get("keyMappingId");
+
+        if (keyMappingId == null) {
+            String error = "Failed to map the application keys : Key Mapping ID is null";
+            log.error(error);
+            throw new DevPortalRestApiManagerRuntimeException(error);
+        }
+
+        return keyMappingId;
+    }
+
+    public List<String> subscribeToAPIs(String applicationId, String[] apiIds) {
+        authenticate();
+
+        JSONArray body = new JSONArray();
+
+        for (String apiId : apiIds) {
+            JSONObject subscriptionBody = new JSONObject();
+            subscriptionBody.put("applicationId", applicationId);
+            subscriptionBody.put("apiId", apiId);
+            subscriptionBody.put("throttlingPolicy", "Unlimited");
+            body.add(subscriptionBody);
+        }
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Accept", "application/json");
+
+        GatewayHttpResponse response = null;
+
+        try {
+            response = client.send(new GatewayHttpRequest(
+                    "POST",
+                    amHost + REST_API_RESOURCE_SUBSCRIPTION + "/multiple",
+                    body.toJSONString(),
+                    headers
+            ));
+        } catch (GatewayHttpClientRuntimeException e) {
+            log.error("Failed to subscribe to APIs", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to subscribe to APIs", e);
+        }
+
+        handleExpectedHttpStatusResponse(response, 200, "Failed to subscribe to APIs");
+
+        JSONArray responseJson = null;
+
+        try {
+            responseJson = (JSONArray) (new JSONParser()).parse(response.getBody());
+        } catch (ParseException e) {
+            log.error("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
+        }
+
+        List<String> subscriptionIds = new ArrayList<>();
+
+        for (Object subscription : responseJson) {
+            subscriptionIds.add((String) ((JSONObject) subscription).get("subscriptionId"));
+        }
+
+        return subscriptionIds;
+    }
+
+    public void unsubscribeToAPI(String subscriptionId) {
+        authenticate();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Accept", "application/json");
+
+        GatewayHttpResponse response = null;
+
+        try {
+            response = client.send(new GatewayHttpRequest(
+                    "DELETE",
+                    amHost + REST_API_RESOURCE_SUBSCRIPTION + "/" + subscriptionId,
+                    null,
+                    headers
+            ));
+        } catch (GatewayHttpClientRuntimeException e) {
+            log.error("Failed to unsubscribe to API", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to unsubscribe to API", e);
+        }
+    }
+
+    public List<String> searchAPIsByTag(String tag) {
+        authenticate();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("query", String.format("tag:%s", tag));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Accept", "application/json");
+
+        GatewayHttpResponse response = null;
+
+        try {
+            response = client.send(new GatewayHttpRequest(
+                    "GET",
+                    concatParamsToUrl(amHost + REST_API_RESOURCE_APIS, params),
+                    null,
+                    headers
+            ));
+        } catch (GatewayHttpClientRuntimeException e) {
+            log.error("Failed to search APIs by tag", e);
+            throw new DevPortalRestApiManagerRuntimeException("Failed to search APIs by tag", e);
+        }
+
+        handleExpectedHttpStatusResponse(response, 200, "Failed to search APIs by tag");
+
+        JSONObject responseJson = null;
+
+        try {
+            responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
+        } catch (ParseException e) {
+            log.error("Error parsing the response", e);
+            throw new DevPortalRestApiManagerRuntimeException("Error parsing the response", e);
+        }
+
+        JSONArray apisJson = (JSONArray) responseJson.get("list");
+
+        List<String> apiIds = new ArrayList<>();
+
+        for (Object api : apisJson) {
+            apiIds.add((String) ((JSONObject) api).get("id"));
+        }
+
+        return apiIds;
     }
 
     public APIMApplication updateApplication(APIMApplication application) throws DevPortalRestApiManagerRuntimeException {

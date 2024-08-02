@@ -11,6 +11,7 @@ import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 public class DevPortalRestApiManagerTest {
 
@@ -21,6 +22,16 @@ public class DevPortalRestApiManagerTest {
     private final String applicationThrottlingPolicy = "Unlimited";
     private final String applicationDescription = "description";
     private final String applicationTokenType = "JWT";
+
+    private final String consumerKey = "a7fvPXfZzXfbZIy__nYzBOY8pnEa";
+    private final String consumerSecret = "02sv1TtFBQbfP0JOfViJ2ENVjORSK1f1Ily7fyw3sfoa";
+
+    private final String tag = "regulatory";
+    private final String expectedApiId = "d356e142-bd87-49fa-805f-771582c9a34f";
+
+    private String keyMappingId = null;
+    private String subscriptionId = null;
+
 
     @BeforeClass
     public void setUp() throws NoSuchAlgorithmException, KeyManagementException {
@@ -94,6 +105,42 @@ public class DevPortalRestApiManagerTest {
         Assert.assertEquals(apimApplications[0].getTokenType(), applicationTokenType);
     }
 
+    @Test
+    public void searchApplicationsByTagTest() {
+        List<String> apiIds = devPortalRestApiManager.searchAPIsByTag(tag);
+        Assert.assertNotNull(apiIds);
+        Assert.assertFalse(apiIds.isEmpty());
+        String apiId = apiIds.get(0);
+        Assert.assertEquals(apiId, expectedApiId);
+    }
+
+    @Test(dependsOnMethods = "retrieveApplicationTest")
+    public void mapApplicationKeysTest() {
+        keyMappingId = devPortalRestApiManager.mapApplicationKeys(
+                applicationId,
+                consumerKey,
+                consumerSecret,
+                "IS7KM",
+                true
+        );
+
+        Assert.assertNotNull(keyMappingId);
+    }
+
+    @Test(dependsOnMethods = {"retrieveApplicationTest", "mapApplicationKeysTest"})
+    public void subscribeToAPIsTest() {
+        String[] apiIds = new String[]{expectedApiId};
+        List<String> subscriptionIds = devPortalRestApiManager.subscribeToAPIs(applicationId, new String[]{expectedApiId});
+        Assert.assertFalse(false);
+        subscriptionId = subscriptionIds.get(0);
+        Assert.assertNotNull(subscriptionIds);
+    }
+
+    @Test(dependsOnMethods = "subscribeToAPIsTest")
+    public void unsubscribeToAPIsTest() {
+        devPortalRestApiManager.unsubscribeToAPI(subscriptionId);
+    }
+
     @Test(dependsOnMethods = "retrieveApplicationTest")
     public void updateApplicationTest() {
         String updatedApplicationName = applicationName + "updated";
@@ -118,7 +165,7 @@ public class DevPortalRestApiManagerTest {
         Assert.assertEquals(updatedApplication.getDescription(), updatedApplicationDescription);
     }
 
-    @Test(dependsOnMethods = "updateApplicationTest")
+    @Test(dependsOnMethods = {"updateApplicationTest", "unsubscribeToAPIsTest"})
     public void deleteApplicationTest() {
         devPortalRestApiManager.deleteApplication(applicationId);
     }
