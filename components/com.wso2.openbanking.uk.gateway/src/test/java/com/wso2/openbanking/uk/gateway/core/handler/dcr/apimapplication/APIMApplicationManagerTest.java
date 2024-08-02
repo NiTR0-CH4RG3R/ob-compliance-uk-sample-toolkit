@@ -82,6 +82,19 @@ public class APIMApplicationManagerTest {
     }
 
     @Test(dependsOnMethods = "retrieveApplicationTest")
+    public void searchApplicationsByNameTest() {
+        APIMApplication[] apimApplications = apimApplicationManager.searchApplicationsByName(applicationName).toArray(new APIMApplication[0]);
+
+        Assert.assertNotNull(apimApplications);
+        Assert.assertTrue(apimApplications.length > 0);
+        Assert.assertEquals(apimApplications[0].getApplicationId(), applicationId);
+        Assert.assertEquals(apimApplications[0].getName(), applicationName);
+        Assert.assertEquals(apimApplications[0].getThrottlingPolicy(), applicationThrottlingPolicy);
+        Assert.assertEquals(apimApplications[0].getDescription(), applicationDescription);
+        Assert.assertEquals(apimApplications[0].getTokenType(), applicationTokenType);
+    }
+
+    @Test(dependsOnMethods = "retrieveApplicationTest")
     public void updateApplicationTest() {
         String updatedApplicationName = applicationName + "updated";
         String updatedApplicationDescription = applicationDescription + "updated";

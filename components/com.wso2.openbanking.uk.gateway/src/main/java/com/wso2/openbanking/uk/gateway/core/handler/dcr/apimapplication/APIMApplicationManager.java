@@ -15,9 +15,7 @@ import org.json.simple.parser.ParseException;
 
 import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class APIMApplicationManager {
     private static final Log log = LogFactory.getLog(APIMApplicationManager.class);
@@ -146,6 +144,52 @@ public class APIMApplicationManager {
         }
 
         return mapJsonObjectToAPIMApplication(responseJson);
+    }
+
+    public List<APIMApplication> searchApplicationsByName(String applicationName) throws APIMApplicationRuntimeException {
+        authenticate();
+
+        Map<String, String> params = new HashMap<>();
+        params.put("query", applicationName);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Accept", "application/json");
+
+        GatewayHttpResponse response = null;
+
+        try {
+            response = client.send(new GatewayHttpRequest(
+                    "GET",
+                    concatParamsToUrl(amHost + REST_API_RESOURCE_APPLICATION, params),
+                    null,
+                    headers
+            ));
+        } catch (GatewayHttpClientRuntimeException e) {
+            log.error("Failed to search applications by name", e);
+            throw new APIMApplicationRuntimeException("Failed to search applications by name", e);
+        }
+
+        handleExpectedHttpStatusResponse(response, 200, "Failed to search applications by name");
+
+        JSONObject responseJson = null;
+
+        try {
+            responseJson = (JSONObject) (new JSONParser()).parse(response.getBody());
+        } catch (ParseException e) {
+            log.error("Error parsing the response", e);
+            throw new APIMApplicationRuntimeException("Error parsing the response", e);
+        }
+
+        JSONArray applicationsJson = (JSONArray) responseJson.get("list");
+
+        List<APIMApplication> applications = new ArrayList<>();
+
+        for (Object application : applicationsJson) {
+            applications.add(mapJsonObjectToAPIMApplication((JSONObject) application));
+        }
+
+        return applications;
     }
 
     public APIMApplication updateApplication(APIMApplication application) throws APIMApplicationRuntimeException {
@@ -315,6 +359,20 @@ public class APIMApplicationManager {
         return encodedData.toString();
     }
 
+    private static String concatParamsToUrl(String url, Map<String, String> params) {
+        StringBuilder urlBuilder = new StringBuilder(url);
+        urlBuilder.append("?");
+
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            urlBuilder.append(entry.getKey());
+            urlBuilder.append("=");
+            urlBuilder.append(entry.getValue());
+            urlBuilder.append("&");
+        }
+
+        return urlBuilder.toString();
+    }
+
     private static String generateBasicAuthHeader(String username, String password) {
         String credentials = username + ":" + password;
         return "Basic " + new String(
@@ -354,13 +412,21 @@ public class APIMApplicationManager {
         }
 
         // Convert the groups to String[]
-        String[] groups = convertJsonArrayToArray((JSONArray) jsonObject.get("groups"), String.class);
+        String[] groups = null;
+
+        if (jsonObject.get("groups") != null) {
+            groups = convertJsonArrayToArray((JSONArray) jsonObject.get("groups"), String.class);
+        }
 
         // Convert the subscriptionScopes to String[]
-        String[] subscriptionScopes = convertJsonArrayToArray(
-                (JSONArray) jsonObject.get("subscriptionScopes"),
-                String.class
-        );
+        String[] subscriptionScopes = null;
+
+        if (jsonObject.get("subscriptionScopes") != null) {
+            subscriptionScopes = convertJsonArrayToArray(
+                    (JSONArray) jsonObject.get("subscriptionScopes"),
+                    String.class
+            );
+        }
 
         return new APIMApplication(
                 (String) jsonObject.get("applicationId"),
