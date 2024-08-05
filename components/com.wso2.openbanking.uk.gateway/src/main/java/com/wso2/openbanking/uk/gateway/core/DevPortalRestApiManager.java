@@ -1,6 +1,8 @@
 package com.wso2.openbanking.uk.gateway.core;
 
 
+import com.wso2.openbanking.uk.common.constants.HttpHeader;
+import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.common.constants.HttpMethod;
 import com.wso2.openbanking.uk.common.core.SimpleAbstractHttpClient;
 import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
@@ -16,10 +18,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
-
 import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class DevPortalRestApiManager {
@@ -86,9 +85,9 @@ public class DevPortalRestApiManager {
         body.put("subscriptionScopes", application.getSubscriptionScopes());
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -122,8 +121,8 @@ public class DevPortalRestApiManager {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -160,8 +159,8 @@ public class DevPortalRestApiManager {
         params.put("query", applicationName);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -217,9 +216,9 @@ public class DevPortalRestApiManager {
         body.put("keyType", keyType);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -291,9 +290,9 @@ public class DevPortalRestApiManager {
         }
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -333,8 +332,8 @@ public class DevPortalRestApiManager {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -358,8 +357,8 @@ public class DevPortalRestApiManager {
         params.put("applicationId", applicationId);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -404,8 +403,8 @@ public class DevPortalRestApiManager {
         params.put("query", String.format("tag:%s", tag));
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -456,9 +455,9 @@ public class DevPortalRestApiManager {
         body.put("subscriptionScopes", application.getSubscriptionScopes());
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -492,8 +491,8 @@ public class DevPortalRestApiManager {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
-        headers.put("Accept", "application/json");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBearerAuthHeader(accessToken));
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
 
         SimpleHttpResponse response = null;
 
@@ -526,8 +525,8 @@ public class DevPortalRestApiManager {
         body.put("saasApp", true);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/json");
-        headers.put("Authorization", HttpUtil.generateBasicAuthHeader(amUsername, amPassword));
+        headers.put(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBasicAuthHeader(amUsername, amPassword));
 
         SimpleHttpResponse response = null;
 
@@ -566,8 +565,8 @@ public class DevPortalRestApiManager {
         body.put("scope", "openid apim:subscribe apim:app_manage");
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Content-Type", "application/x-www-form-urlencoded");
-        headers.put("Authorization", HttpUtil.generateBasicAuthHeader(clientId, clientSecret));
+        headers.put(HttpHeader.CONTENT_TYPE, "application/x-www-form-urlencoded");
+        headers.put(HttpHeader.AUTHORIZATION, HttpUtil.generateBasicAuthHeader(clientId, clientSecret));
 
         SimpleHttpResponse response = null;
 
