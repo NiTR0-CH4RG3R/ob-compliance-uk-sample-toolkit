@@ -1,5 +1,6 @@
 package com.wso2.openbanking.uk.gateway.impl.handler;
 
+import com.wso2.openbanking.uk.common.constants.HttpMethod;
 import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
 import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
@@ -30,11 +31,6 @@ import java.util.function.Function;
  */
 public class DCRHandler extends OpenBankingAPIHandler {
     private static final Log log = LogFactory.getLog(DCRHandler.class);
-
-    private static final String HTTP_METHOD_GET = "GET";
-    private static final String HTTP_METHOD_POST = "POST";
-    private static final String HTTP_METHOD_PUT = "PUT";
-    private static final String HTTP_METHOD_DELETE = "DELETE";
 
     // TODO : This is a temporary solution. Need to be removed once the proper authentication mechanism is implemented.
     private static final String IS_USERNAME = "admin";
@@ -67,9 +63,9 @@ public class DCRHandler extends OpenBankingAPIHandler {
         ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
 
         // If the request is a POST, or PUT request, then the request payload should be validated.
-        String httpMethod = requestContextDTO.getMsgInfo().getHttpMethod();
+        HttpMethod httpMethod = HttpMethod.valueOf(requestContextDTO.getMsgInfo().getHttpMethod());
 
-        if (HTTP_METHOD_POST.equals(httpMethod) || HTTP_METHOD_PUT.equals(httpMethod)) {
+        if (httpMethod.equals(HttpMethod.POST) || httpMethod.equals(HttpMethod.PUT)) {
             // Extract the request payload
             String requestPayload = getPayload(requestContextDTO.getMsgInfo());
 
@@ -139,13 +135,13 @@ public class DCRHandler extends OpenBankingAPIHandler {
     @Override
     protected ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO)
             throws OpenBankingAPIHandlerException {
-        String httpMethod = requestContextDTO.getMsgInfo().getHttpMethod();
+        HttpMethod httpMethod = HttpMethod.valueOf(requestContextDTO.getMsgInfo().getHttpMethod());
 
         // If the request is a GET, PUT, or DELETE request, then the clientId sent in the path should be verified.
         if(
-                StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_GET) ||
-                        StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_PUT)  ||
-                        StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_DELETE)
+                httpMethod.equals(HttpMethod.GET) ||
+                httpMethod.equals(HttpMethod.PUT) ||
+                httpMethod.equals(HttpMethod.DELETE)
         ) {
             String clientIdSentInRequest = HttpUtil.extractPathVariableSentAsLastSegment(
                     requestContextDTO
@@ -169,8 +165,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
         Map<String, String> headers = requestContextDTO.getMsgInfo().getHeaders();
 
         if (
-                StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_POST)  ||
-                        StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_PUT)
+                httpMethod.equals(HttpMethod.POST) ||
+                httpMethod.equals(HttpMethod.PUT)
         ) {
             if (modifiedPayload == null) {
                 log.error("Request payload is null");
@@ -248,24 +244,26 @@ public class DCRHandler extends OpenBankingAPIHandler {
             extensionResponseDTO.setPayload(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
         }
 
-        String httpMethod = responseContextDTO.getMsgInfo().getHttpMethod();
+        HttpMethod httpMethod = HttpMethod.valueOf(responseContextDTO.getMsgInfo().getHttpMethod());
 
         switch (httpMethod) {
-            case HTTP_METHOD_GET:
+            case GET:
                 break;
-            case HTTP_METHOD_POST:
+            case POST:
                 processResponseForHttpMethodPost(extensionResponseDTO, responseContextDTO);
                 break;
-            case HTTP_METHOD_PUT:
+            case PUT:
                 processResponseForHttpMethodPut(extensionResponseDTO, responseContextDTO);
                 break;
-            case HTTP_METHOD_DELETE:
+            case DELETE:
                 processResponseForHttpMethodDelete(extensionResponseDTO, responseContextDTO);
                 break;
             default:
-                String error = String.format("Unsupported HTTP method: %s", StringUtil.sanitizeString(httpMethod));
+                String error = String.format("Unsupported HTTP method: %s",
+                        StringUtil.sanitizeString(httpMethod.name())
+                );
                 log.error(StringUtil.sanitizeString(error));
-                throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + httpMethod);
+                throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + httpMethod.name());
         }
 
         return extensionResponseDTO;
