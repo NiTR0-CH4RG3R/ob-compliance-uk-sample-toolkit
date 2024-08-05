@@ -1,8 +1,7 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
+package com.wso2.openbanking.uk.gateway.core;
 
 import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
-import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
-import com.wso2.openbanking.uk.gateway.model.APIMApplication;
+import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -64,7 +63,7 @@ public class DevPortalRestApiManagerTest {
 
     @Test
     public void createApplicationTest() {
-        APIMApplication apimApplication = new APIMApplication(
+        DevPortalApplication devPortalApplication = new DevPortalApplication(
                 null,
                 applicationName,
                 applicationThrottlingPolicy,
@@ -75,7 +74,7 @@ public class DevPortalRestApiManagerTest {
                 null
         );
 
-        APIMApplication createdApplication = devPortalRestApiManager.createApplication(apimApplication);
+        DevPortalApplication createdApplication = devPortalRestApiManager.createApplication(devPortalApplication);
 
         Assert.assertNotNull(createdApplication.getApplicationId());
 
@@ -84,27 +83,27 @@ public class DevPortalRestApiManagerTest {
 
     @Test(dependsOnMethods = "createApplicationTest")
     public void retrieveApplicationTest() {
-        APIMApplication apimApplication = devPortalRestApiManager.retrieveApplication(applicationId);
+        DevPortalApplication devPortalApplication = devPortalRestApiManager.retrieveApplication(applicationId);
 
-        Assert.assertNotNull(apimApplication);
-        Assert.assertEquals(apimApplication.getApplicationId(), applicationId);
-        Assert.assertEquals(apimApplication.getName(), applicationName);
-        Assert.assertEquals(apimApplication.getThrottlingPolicy(), applicationThrottlingPolicy);
-        Assert.assertEquals(apimApplication.getDescription(), applicationDescription);
-        Assert.assertEquals(apimApplication.getTokenType(), applicationTokenType);
+        Assert.assertNotNull(devPortalApplication);
+        Assert.assertEquals(devPortalApplication.getApplicationId(), applicationId);
+        Assert.assertEquals(devPortalApplication.getName(), applicationName);
+        Assert.assertEquals(devPortalApplication.getThrottlingPolicy(), applicationThrottlingPolicy);
+        Assert.assertEquals(devPortalApplication.getDescription(), applicationDescription);
+        Assert.assertEquals(devPortalApplication.getTokenType(), applicationTokenType);
     }
 
     @Test(dependsOnMethods = "retrieveApplicationTest")
     public void searchApplicationsByNameTest() {
-        APIMApplication[] apimApplications = devPortalRestApiManager.searchApplicationsByName(applicationName).toArray(new APIMApplication[0]);
+        DevPortalApplication[] devPortalApplications = devPortalRestApiManager.searchApplicationsByName(applicationName).toArray(new DevPortalApplication[0]);
 
-        Assert.assertNotNull(apimApplications);
-        Assert.assertTrue(apimApplications.length > 0);
-        Assert.assertEquals(apimApplications[0].getApplicationId(), applicationId);
-        Assert.assertEquals(apimApplications[0].getName(), applicationName);
-        Assert.assertEquals(apimApplications[0].getThrottlingPolicy(), applicationThrottlingPolicy);
-        Assert.assertEquals(apimApplications[0].getDescription(), applicationDescription);
-        Assert.assertEquals(apimApplications[0].getTokenType(), applicationTokenType);
+        Assert.assertNotNull(devPortalApplications);
+        Assert.assertTrue(devPortalApplications.length > 0);
+        Assert.assertEquals(devPortalApplications[0].getApplicationId(), applicationId);
+        Assert.assertEquals(devPortalApplications[0].getName(), applicationName);
+        Assert.assertEquals(devPortalApplications[0].getThrottlingPolicy(), applicationThrottlingPolicy);
+        Assert.assertEquals(devPortalApplications[0].getDescription(), applicationDescription);
+        Assert.assertEquals(devPortalApplications[0].getTokenType(), applicationTokenType);
     }
 
     @Test
@@ -148,7 +147,7 @@ public class DevPortalRestApiManagerTest {
         String updatedApplicationName = applicationName + "updated";
         String updatedApplicationDescription = applicationDescription + "updated";
 
-        APIMApplication apimApplication = new APIMApplication(
+        DevPortalApplication devPortalApplication = new DevPortalApplication(
                 applicationId,
                 updatedApplicationName,
                 applicationThrottlingPolicy,
@@ -159,7 +158,7 @@ public class DevPortalRestApiManagerTest {
                 null
         );
 
-        APIMApplication updatedApplication = devPortalRestApiManager.updateApplication(apimApplication);
+        DevPortalApplication updatedApplication = devPortalRestApiManager.updateApplication(devPortalApplication);
 
         Assert.assertNotNull(updatedApplication);
         Assert.assertEquals(updatedApplication.getApplicationId(), applicationId);

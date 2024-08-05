@@ -1,12 +1,13 @@
 package com.wso2.openbanking.uk.gateway.core;
 
 
-import com.wso2.openbanking.uk.common.constants.SimpleAbstractHttpClient;
+import com.wso2.openbanking.uk.common.constants.HttpMethod;
+import com.wso2.openbanking.uk.common.core.SimpleAbstractHttpClient;
 import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import com.wso2.openbanking.uk.common.util.StringUtil;
-import com.wso2.openbanking.uk.gateway.model.APIMApplication;
+import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,7 +72,7 @@ public class DevPortalRestApiManager {
         this(client, amHost, null, null);
     }
 
-    public APIMApplication createApplication(APIMApplication application) throws DevPortalRestApiManagerRuntimeException {
+    public DevPortalApplication createApplication(DevPortalApplication application) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, Object> body = new HashMap<>();
@@ -92,7 +93,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "POST",
+                    HttpMethod.POST,
                     amHost + REST_API_RESOURCE_APPLICATION,
                     (new JSONObject(body)).toJSONString(),
                     headers
@@ -116,7 +117,7 @@ public class DevPortalRestApiManager {
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public APIMApplication retrieveApplication(String applicationId) throws DevPortalRestApiManagerRuntimeException {
+    public DevPortalApplication retrieveApplication(String applicationId) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
@@ -127,7 +128,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "GET",
+                    HttpMethod.GET,
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId,
                     null,
                     headers
@@ -151,7 +152,7 @@ public class DevPortalRestApiManager {
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public List<APIMApplication> searchApplicationsByName(String applicationName) throws DevPortalRestApiManagerRuntimeException {
+    public List<DevPortalApplication> searchApplicationsByName(String applicationName) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> params = new HashMap<>();
@@ -165,7 +166,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "GET",
+                    HttpMethod.GET,
                     concatParamsToUrl(amHost + REST_API_RESOURCE_APPLICATION, params),
                     null,
                     headers
@@ -188,7 +189,7 @@ public class DevPortalRestApiManager {
 
         JSONArray applicationsJson = (JSONArray) responseJson.get("list");
 
-        List<APIMApplication> applications = new ArrayList<>();
+        List<DevPortalApplication> applications = new ArrayList<>();
 
         for (Object application : applicationsJson) {
             applications.add(mapJsonObjectToAPIMApplication((JSONObject) application));
@@ -223,7 +224,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "POST",
+                    HttpMethod.POST,
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId + "/map-keys",
                     (new JSONObject(body)).toJSONString(),
                     headers
@@ -297,7 +298,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "POST",
+                    HttpMethod.POST,
                     amHost + REST_API_RESOURCE_SUBSCRIPTION + "/multiple",
                     body.toJSONString(),
                     headers
@@ -338,7 +339,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "DELETE",
+                    HttpMethod.DELETE,
                     amHost + REST_API_RESOURCE_SUBSCRIPTION + "/" + subscriptionId,
                     null,
                     headers
@@ -363,7 +364,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "GET",
+                    HttpMethod.GET,
                     concatParamsToUrl(amHost + REST_API_RESOURCE_SUBSCRIPTION, params),
                     null,
                     headers
@@ -409,7 +410,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "GET",
+                    HttpMethod.GET,
                     concatParamsToUrl(amHost + REST_API_RESOURCE_APIS, params),
                     null,
                     headers
@@ -441,7 +442,7 @@ public class DevPortalRestApiManager {
         return apiIds;
     }
 
-    public APIMApplication updateApplication(APIMApplication application) throws DevPortalRestApiManagerRuntimeException {
+    public DevPortalApplication updateApplication(DevPortalApplication application) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, Object> body = new HashMap<>();
@@ -462,7 +463,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "PUT",
+                    HttpMethod.PUT,
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + application.getApplicationId(),
                     (new JSONObject(body)).toJSONString(),
                     headers
@@ -497,7 +498,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "DELETE",
+                    HttpMethod.DELETE,
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId,
                     null,
                     headers
@@ -531,7 +532,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                            "POST",
+                            HttpMethod.POST,
                             clientRegistrationUrl,
                             (new JSONObject(body)).toJSONString(),
                             headers
@@ -571,7 +572,7 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                    "POST",
+                    HttpMethod.POST,
                     amHost + REST_API_RESOURCE_TOKEN,
                     convertToXWWWFormUrlEncoded(body),
                     headers
@@ -652,7 +653,7 @@ public class DevPortalRestApiManager {
         }
     }
 
-    private static APIMApplication mapJsonObjectToAPIMApplication(JSONObject jsonObject) {
+    private static DevPortalApplication mapJsonObjectToAPIMApplication(JSONObject jsonObject) {
         // Convert the response attributes to Map<String, String>
         Map<String, String> attributes = new HashMap<>();
         JSONObject attributesJson = (JSONObject) jsonObject.get("attributes");
@@ -677,7 +678,7 @@ public class DevPortalRestApiManager {
             );
         }
 
-        return new APIMApplication(
+        return new DevPortalApplication(
                 (String) jsonObject.get("applicationId"),
                 (String) jsonObject.get("name"),
                 (String) jsonObject.get("throttlingPolicy"),

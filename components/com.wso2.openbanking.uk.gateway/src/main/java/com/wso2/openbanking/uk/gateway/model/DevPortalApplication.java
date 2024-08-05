@@ -2,7 +2,7 @@ package com.wso2.openbanking.uk.gateway.model;
 
 import java.util.Map;
 
-public class APIMApplication {
+public class DevPortalApplication {
     private final String applicationId;
     private final String name;
     private final String throttlingPolicy;
@@ -12,7 +12,7 @@ public class APIMApplication {
     private final Map<String, String> attributes;
     private final String[] subscriptionScopes;
 
-    public APIMApplication(
+    public DevPortalApplication(
             String applicationId,
             String name,
             String throttlingPolicy,

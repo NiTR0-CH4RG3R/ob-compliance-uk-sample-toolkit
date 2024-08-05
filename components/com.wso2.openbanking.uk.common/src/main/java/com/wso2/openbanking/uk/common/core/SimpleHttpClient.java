@@ -1,6 +1,5 @@
 package com.wso2.openbanking.uk.common.core;
 
-import com.wso2.openbanking.uk.common.constants.SimpleAbstractHttpClient;
 import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
@@ -43,12 +42,12 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
         try {
             if (request.getBody() != null) {
                 requestBuilder = requestBuilder.method(
-                        request.getMethod(),
+                        request.getMethod().name(),
                         HttpRequest.BodyPublishers.ofString(request.getBody())
                 );
             } else {
                 requestBuilder = requestBuilder.method(
-                        request.getMethod(),
+                        request.getMethod().name(),
                         HttpRequest.BodyPublishers.noBody()
                 );
             }

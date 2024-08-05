@@ -1,6 +1,5 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt;
+package com.wso2.openbanking.uk.gateway.core;
 
-import com.wso2.openbanking.uk.gateway.core.JWTValidator;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

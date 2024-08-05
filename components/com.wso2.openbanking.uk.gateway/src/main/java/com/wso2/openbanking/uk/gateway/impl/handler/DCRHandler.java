@@ -6,10 +6,10 @@ import com.wso2.openbanking.uk.common.util.StringUtil;
 import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
 import com.wso2.openbanking.uk.gateway.core.JWTValidator;
 import com.wso2.openbanking.uk.gateway.core.ServiceProvider;
-import com.wso2.openbanking.uk.gateway.model.APIMApplication;
+import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
-import com.wso2.openbanking.uk.gateway.constants.HttpHeader;
-import com.wso2.openbanking.uk.gateway.constants.HttpHeaderContentType;
+import com.wso2.openbanking.uk.common.constants.HttpHeader;
+import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
@@ -311,10 +311,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         // Create an application in the APIM with the client_id as the name
 
-        APIMApplication apimApplication = null;
+        DevPortalApplication devPortalApplication = null;
         try {
-            apimApplication = devPortalRestApiManager.createApplication(
-                    new APIMApplication(
+            devPortalApplication = devPortalRestApiManager.createApplication(
+                    new DevPortalApplication(
                             null,
                             clientId,
                             "Unlimited",
@@ -337,7 +337,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         try {
             keyMappingId = devPortalRestApiManager.mapApplicationKeys(
-                    apimApplication.getApplicationId(),
+                    devPortalApplication.getApplicationId(),
                     clientId,
                     clientSecret,
                     GatewayConstants.KEY_MANAGER_NAME,
@@ -347,7 +347,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
             try {
                 // If an error occurred while mapping the application keys, delete the application
-                devPortalRestApiManager.deleteApplication(apimApplication.getApplicationId());
+                devPortalRestApiManager.deleteApplication(devPortalApplication.getApplicationId());
             } catch (DevPortalRestApiManagerRuntimeException e1) {
                 log.error("Error occurred while deleting the application in the APIM", e1);
                 throw new OpenBankingAPIHandlerException(
@@ -376,7 +376,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         List<String> subscriptionIds = null;
 
         try {
-            subscriptionIds = devPortalRestApiManager.subscribeToAPIs(apimApplication.getApplicationId(), apiIds.toArray(new String[0]));
+            subscriptionIds = devPortalRestApiManager.subscribeToAPIs(devPortalApplication.getApplicationId(), apiIds.toArray(new String[0]));
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while subscribing to the regulatory APIs", e);
             throw new OpenBankingAPIHandlerException("Error occurred while subscribing to the regulatory APIs", e);
@@ -421,10 +421,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
         }
 
         // Get the application that have been created in the APIM
-        APIMApplication apimApplication = null;
+        DevPortalApplication devPortalApplication = null;
 
         try {
-            apimApplication = devPortalRestApiManager.searchApplicationsByName(clientId).get(0);
+            devPortalApplication = devPortalRestApiManager.searchApplicationsByName(clientId).get(0);
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while searching the application in the APIM", e);
             throw new OpenBankingAPIHandlerException(
@@ -437,7 +437,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         try {
             keyMappingId = devPortalRestApiManager.mapApplicationKeys(
-                    apimApplication.getApplicationId(),
+                    devPortalApplication.getApplicationId(),
                     clientId,
                     clientSecret,
                     GatewayConstants.KEY_MANAGER_NAME,
@@ -465,10 +465,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
         );
 
         // Get the application that have been created in the APIM
-        APIMApplication apimApplication = null;
+        DevPortalApplication devPortalApplication = null;
 
         try {
-            apimApplication = devPortalRestApiManager.searchApplicationsByName(clientId).get(0);
+            devPortalApplication = devPortalRestApiManager.searchApplicationsByName(clientId).get(0);
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while searching the application in the APIM", e);
             throw new OpenBankingAPIHandlerException(
@@ -479,7 +479,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         List<String> subscriptionIds = null;
 
         try {
-            subscriptionIds = devPortalRestApiManager.getSubscriptionsByApplicationId(apimApplication.getApplicationId());
+            subscriptionIds = devPortalRestApiManager.getSubscriptionsByApplicationId(devPortalApplication.getApplicationId());
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while getting the subscriptions of the application in the APIM", e);
             throw new OpenBankingAPIHandlerException(
@@ -501,7 +501,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         // Delete the application
         try {
-            devPortalRestApiManager.deleteApplication(apimApplication.getApplicationId());
+            devPortalRestApiManager.deleteApplication(devPortalApplication.getApplicationId());
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while deleting the application in the APIM", e);
             throw new OpenBankingAPIHandlerException(

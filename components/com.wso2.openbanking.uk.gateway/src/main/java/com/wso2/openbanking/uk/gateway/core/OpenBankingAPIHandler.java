@@ -1,7 +1,7 @@
 package com.wso2.openbanking.uk.gateway.core;
 
-import com.wso2.openbanking.uk.gateway.constants.HttpHeader;
-import com.wso2.openbanking.uk.gateway.constants.HttpHeaderContentType;
+import com.wso2.openbanking.uk.common.constants.HttpHeader;
+import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.constants;
+package com.wso2.openbanking.uk.common.constants;
 
 public class HttpHeader {
     public static final String CONTENT_TYPE = "Content-Type";

@@ -1,21 +1,23 @@
 package com.wso2.openbanking.uk.common.model;
 
+import com.wso2.openbanking.uk.common.constants.HttpMethod;
+
 import java.util.Map;
 
 public class SimpleHttpRequest {
-    private final String method;
+    private final HttpMethod method;
     private final String url;
     private final String body;
     private final Map<String, String> headers;
 
-    public SimpleHttpRequest(String method, String url, String body, Map<String, String> headers) {
+    public SimpleHttpRequest(HttpMethod method, String url, String body, Map<String, String> headers) {
         this.method = method;
         this.url = url;
         this.body = body;
         this.headers = headers;
     }
 
-    public String getMethod() {
+    public HttpMethod getMethod() {
         return method;
     }
 
