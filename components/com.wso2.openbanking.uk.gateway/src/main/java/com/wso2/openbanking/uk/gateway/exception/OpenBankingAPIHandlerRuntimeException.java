@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.handler.exception;
+package com.wso2.openbanking.uk.gateway.exception;
 
 /**
  * This class is the runtime exception class for the Open Banking API handler. If any component in the toolkit decides

@@ -1,7 +1,7 @@
-package com.wso2.openbanking.uk.gateway.core.impl;
+package com.wso2.openbanking.uk.gateway.impl;
 
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.DCRHandler;
-import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
+import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
+import com.wso2.openbanking.uk.gateway.impl.handler.DCRHandler;
 import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;

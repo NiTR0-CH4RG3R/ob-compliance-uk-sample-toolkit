@@ -1,8 +1,8 @@
-package com.wso2.openbanking.uk.gateway.handler.core;
+package com.wso2.openbanking.uk.gateway.core;
 
-import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeader;
-import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeaderContentType;
-import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
+import com.wso2.openbanking.uk.gateway.constants.HttpHeader;
+import com.wso2.openbanking.uk.gateway.constants.HttpHeaderContentType;
+import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;

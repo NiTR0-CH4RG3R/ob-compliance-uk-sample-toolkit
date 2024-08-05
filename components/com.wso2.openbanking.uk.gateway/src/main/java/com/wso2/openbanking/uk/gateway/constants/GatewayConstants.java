@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.common.constants;
+package com.wso2.openbanking.uk.gateway.constants;
 
 public class GatewayConstants {
     // NOTE : These are the default values. These can be overridden by the configurations.

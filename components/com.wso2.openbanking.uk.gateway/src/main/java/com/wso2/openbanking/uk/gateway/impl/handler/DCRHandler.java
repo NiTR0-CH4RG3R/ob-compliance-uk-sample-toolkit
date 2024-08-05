@@ -1,18 +1,18 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr;
+package com.wso2.openbanking.uk.gateway.impl.handler;
 
-import com.wso2.openbanking.uk.gateway.common.constants.GatewayConstants;
-import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpClient;
-import com.wso2.openbanking.uk.gateway.common.util.StringUtil;
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal.APIMApplication;
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal.DevPortalRestApiManager;
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal.DevPortalRestApiManagerRuntimeException;
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.isserviceprovider.ISServiceProvider;
-import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeader;
-import com.wso2.openbanking.uk.gateway.handler.constants.HttpHeaderContentType;
-import com.wso2.openbanking.uk.gateway.handler.core.OpenBankingAPIHandler;
-import com.wso2.openbanking.uk.gateway.handler.exception.OpenBankingAPIHandlerException;
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidator;
-import com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt.JWTValidatorRuntimeException;
+import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
+import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
+import com.wso2.openbanking.uk.common.util.StringUtil;
+import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
+import com.wso2.openbanking.uk.gateway.core.JWTValidator;
+import com.wso2.openbanking.uk.gateway.core.ServiceProvider;
+import com.wso2.openbanking.uk.gateway.model.APIMApplication;
+import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
+import com.wso2.openbanking.uk.gateway.constants.HttpHeader;
+import com.wso2.openbanking.uk.gateway.constants.HttpHeaderContentType;
+import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
+import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
+import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -48,7 +48,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         String amHost = GatewayConstants.DEFAULT_AM_HOST;
 
         devPortalRestApiManager = new DevPortalRestApiManager(
-                new GatewayHttpClient(),
+                new SimpleHttpClient(),
                 amHost,
                 GatewayConstants.DEFAULT_AM_USERNAME,
                 GatewayConstants.DEFAULT_AM_PASSWORD
@@ -183,7 +183,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
 //            }
 
             // Set the modified payload to the request context
-            modifiedPayload = ISServiceProvider.convertJsonStringToISDCRRequestJsonString(modifiedPayload);
+            modifiedPayload = ServiceProvider.convertJsonStringToISDCRRequestJsonString(modifiedPayload);
 
             if (modifiedPayload == null) {
                 log.error("Error occurred while mapping the request payload to the IS DCR API request");
@@ -223,7 +223,21 @@ public class DCRHandler extends OpenBankingAPIHandler {
     }
 
     @Override
-    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO)
+    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) throws OpenBankingAPIHandlerException {
+        if (responseContextDTO.getStatusCode() < 200 || responseContextDTO.getStatusCode() >= 300) {
+            String error = String.format(
+                    "Backend responded with an error: %d %s",
+                    responseContextDTO.getStatusCode(),
+                    getPayload(responseContextDTO.getMsgInfo())
+            );
+            log.error(StringUtil.sanitizeString(error));
+            throw new OpenBankingAPIHandlerException(StringUtil.sanitizeString(error));
+        }
+        return null;
+    }
+
+    @Override
+    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
             throws OpenBankingAPIHandlerException {
 
         ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
@@ -241,13 +255,13 @@ public class DCRHandler extends OpenBankingAPIHandler {
             case HTTP_METHOD_GET:
                 break;
             case HTTP_METHOD_POST:
-                processResponseHttpMethodPost(extensionResponseDTO, responseContextDTO);
+                processResponseForHttpMethodPost(extensionResponseDTO, responseContextDTO);
                 break;
             case HTTP_METHOD_PUT:
-                processResponseHttpMethodPut(extensionResponseDTO, responseContextDTO);
+                processResponseForHttpMethodPut(extensionResponseDTO, responseContextDTO);
                 break;
             case HTTP_METHOD_DELETE:
-                processResponseHttpMethodDelete(extensionResponseDTO, responseContextDTO);
+                processResponseForHttpMethodDelete(extensionResponseDTO, responseContextDTO);
                 break;
             default:
                 String error = String.format("Unsupported HTTP method: %s", StringUtil.sanitizeString(httpMethod));
@@ -258,7 +272,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         return extensionResponseDTO;
     }
 
-    private void processResponseHttpMethodPost(
+    private void processResponseForHttpMethodPost(
             ExtensionResponseDTO extensionResponseDTO,
             ResponseContextDTO responseContextDTO
     ) throws OpenBankingAPIHandlerException {
@@ -353,7 +367,6 @@ public class DCRHandler extends OpenBankingAPIHandler {
         // Gat all the regulatory API IDs
         List<String> apiIds = devPortalRestApiManager.searchAPIsByTag(GatewayConstants.AM_TAG_REGULATORY);
 
-        // TODO : If the regulatory APIs are not found, we must subscribe to all the APIs in the APIM
         if (apiIds == null || apiIds.isEmpty()) {
             log.error("No regulatory APIs found in the APIM");
             throw new OpenBankingAPIHandlerException("No regulatory APIs found in the APIM");
@@ -370,7 +383,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         }
     }
 
-    private void processResponseHttpMethodPut(
+    private void processResponseForHttpMethodPut(
             ExtensionResponseDTO extensionResponseDTO,
             ResponseContextDTO responseContextDTO
     ) throws OpenBankingAPIHandlerException {
@@ -441,7 +454,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         }
     }
 
-    private void processResponseHttpMethodDelete(
+    private void processResponseForHttpMethodDelete(
             ExtensionResponseDTO extensionResponseDTO,
             ResponseContextDTO responseContextDTO
     ) throws OpenBankingAPIHandlerException {

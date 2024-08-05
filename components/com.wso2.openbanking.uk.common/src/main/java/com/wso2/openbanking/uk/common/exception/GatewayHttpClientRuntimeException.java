@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.common.gatewayhttpclient;
+package com.wso2.openbanking.uk.common.exception;
 
 public class GatewayHttpClientRuntimeException extends RuntimeException {
     public GatewayHttpClientRuntimeException(String message, Throwable cause) {

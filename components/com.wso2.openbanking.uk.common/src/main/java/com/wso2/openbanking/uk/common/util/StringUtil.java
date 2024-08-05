@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.common.util;
+package com.wso2.openbanking.uk.common.util;
 
 import java.text.Collator;
 import java.util.Locale;

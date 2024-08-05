@@ -1,6 +1,10 @@
-package com.wso2.openbanking.uk.gateway.common.gatewayhttpclient;
+package com.wso2.openbanking.uk.common.core;
 
-import com.wso2.openbanking.uk.gateway.common.util.StringUtil;
+import com.wso2.openbanking.uk.common.constants.SimpleAbstractHttpClient;
+import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
+import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
+import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
+import com.wso2.openbanking.uk.common.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -9,18 +13,17 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Map;
 
-public class GatewayHttpClient implements GatewayAbstractHttpClient {
-    private static final Log log = LogFactory.getLog(GatewayHttpClient.class);
+public class SimpleHttpClient implements SimpleAbstractHttpClient {
+    private static final Log log = LogFactory.getLog(SimpleHttpClient.class);
     private final HttpClient client;
 
-    public GatewayHttpClient() {
+    public SimpleHttpClient() {
         client = HttpClient.newHttpClient();
     }
 
     @Override
-    public GatewayHttpResponse send(GatewayHttpRequest request) throws GatewayHttpClientRuntimeException {
+    public SimpleHttpResponse send(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
         HttpRequest.Builder requestBuilder = null;
 
         try {
@@ -65,6 +68,6 @@ public class GatewayHttpClient implements GatewayAbstractHttpClient {
             throw new GatewayHttpClientRuntimeException("Error sending request", e);
         }
 
-        return new GatewayHttpResponse(response.statusCode(), response.body());
+        return new SimpleHttpResponse(response.statusCode(), response.body());
     }
 }

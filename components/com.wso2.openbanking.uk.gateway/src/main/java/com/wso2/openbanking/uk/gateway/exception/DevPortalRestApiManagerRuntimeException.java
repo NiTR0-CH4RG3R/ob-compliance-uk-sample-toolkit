@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
+package com.wso2.openbanking.uk.gateway.exception;
 
 public class DevPortalRestApiManagerRuntimeException extends RuntimeException {
     public DevPortalRestApiManagerRuntimeException(String message, Throwable cause) {

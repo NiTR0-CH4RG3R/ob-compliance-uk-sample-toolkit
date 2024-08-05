@@ -1,6 +1,8 @@
 package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
 
-import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpClient;
+import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
+import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
+import com.wso2.openbanking.uk.gateway.model.APIMApplication;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -56,7 +58,7 @@ public class DevPortalRestApiManagerTest {
         String username = "admin";
         String password = "admin";
 
-        GatewayHttpClient gatewayHttpClient = new GatewayHttpClient();
+        SimpleHttpClient gatewayHttpClient = new SimpleHttpClient();
         devPortalRestApiManager = new DevPortalRestApiManager(gatewayHttpClient, amHost, username, password);
     }
 
@@ -121,7 +123,7 @@ public class DevPortalRestApiManagerTest {
                 consumerKey,
                 consumerSecret,
                 "IS7KM",
-                true
+                false
         );
 
         Assert.assertNotNull(keyMappingId);

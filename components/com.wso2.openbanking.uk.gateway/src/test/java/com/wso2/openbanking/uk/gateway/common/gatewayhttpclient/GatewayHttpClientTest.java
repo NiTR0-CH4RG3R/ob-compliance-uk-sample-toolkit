@@ -1,20 +1,23 @@
 package com.wso2.openbanking.uk.gateway.common.gatewayhttpclient;
 
+import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
+import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
+import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class GatewayHttpClientTest {
 
-    GatewayHttpClient gatewayHttpClient = new GatewayHttpClient();
+    SimpleHttpClient gatewayHttpClient = new SimpleHttpClient();
 
     @Test
     public void testSend() {
-        GatewayHttpRequest request = new GatewayHttpRequest(
+        SimpleHttpRequest request = new SimpleHttpRequest(
                 "GET",
                 "http://www.example.com/",
                 null, null
         );
-        GatewayHttpResponse response = gatewayHttpClient.send(request);
+        SimpleHttpResponse response = gatewayHttpClient.send(request);
         Assert.assertEquals(response.getStatusCode(), 200);
     }
 }

@@ -1,11 +1,13 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.devportal;
+package com.wso2.openbanking.uk.gateway.core;
 
 
-import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayAbstractHttpClient;
-import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpClientRuntimeException;
-import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpRequest;
-import com.wso2.openbanking.uk.gateway.common.gatewayhttpclient.GatewayHttpResponse;
-import com.wso2.openbanking.uk.gateway.common.util.StringUtil;
+import com.wso2.openbanking.uk.common.constants.SimpleAbstractHttpClient;
+import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
+import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
+import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
+import com.wso2.openbanking.uk.common.util.StringUtil;
+import com.wso2.openbanking.uk.gateway.model.APIMApplication;
+import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
@@ -33,7 +35,7 @@ public class DevPortalRestApiManager {
 
     private static final String AM_APPLICATION_CLIENT_NAME = "OpenBankingUK-DevPortalRestApiManager";
 
-    private final GatewayAbstractHttpClient client;
+    private final SimpleAbstractHttpClient client;
     private final String amHost;
     private final String clientRegistrationUrl;
 
@@ -46,7 +48,7 @@ public class DevPortalRestApiManager {
     private String accessToken;
 
     public DevPortalRestApiManager(
-            GatewayAbstractHttpClient client,
+            SimpleAbstractHttpClient client,
             String amHost,
             String amUsername,
             String amPassword
@@ -61,11 +63,11 @@ public class DevPortalRestApiManager {
         this.amPassword = amPassword == null || amPassword.isBlank() ? DEFAULT_AM_PASSWORD : amPassword;
     }
 
-    public DevPortalRestApiManager(GatewayAbstractHttpClient client) {
+    public DevPortalRestApiManager(SimpleAbstractHttpClient client) {
         this(client, null, null, null);
     }
 
-    public DevPortalRestApiManager(GatewayAbstractHttpClient client, String amHost) {
+    public DevPortalRestApiManager(SimpleAbstractHttpClient client, String amHost) {
         this(client, amHost, null, null);
     }
 
@@ -86,10 +88,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "POST",
                     amHost + REST_API_RESOURCE_APPLICATION,
                     (new JSONObject(body)).toJSONString(),
@@ -121,10 +123,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "GET",
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId,
                     null,
@@ -159,10 +161,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "GET",
                     concatParamsToUrl(amHost + REST_API_RESOURCE_APPLICATION, params),
                     null,
@@ -217,10 +219,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "POST",
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId + "/map-keys",
                     (new JSONObject(body)).toJSONString(),
@@ -291,10 +293,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "POST",
                     amHost + REST_API_RESOURCE_SUBSCRIPTION + "/multiple",
                     body.toJSONString(),
@@ -332,10 +334,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "DELETE",
                     amHost + REST_API_RESOURCE_SUBSCRIPTION + "/" + subscriptionId,
                     null,
@@ -357,10 +359,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "GET",
                     concatParamsToUrl(amHost + REST_API_RESOURCE_SUBSCRIPTION, params),
                     null,
@@ -403,10 +405,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "GET",
                     concatParamsToUrl(amHost + REST_API_RESOURCE_APIS, params),
                     null,
@@ -456,10 +458,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "PUT",
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + application.getApplicationId(),
                     (new JSONObject(body)).toJSONString(),
@@ -491,10 +493,10 @@ public class DevPortalRestApiManager {
         headers.put("Authorization", generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "DELETE",
                     amHost + REST_API_RESOURCE_APPLICATION + "/" + applicationId,
                     null,
@@ -525,10 +527,10 @@ public class DevPortalRestApiManager {
         headers.put("Content-Type", "application/json");
         headers.put("Authorization", generateBasicAuthHeader(amUsername, amPassword));
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                             "POST",
                             clientRegistrationUrl,
                             (new JSONObject(body)).toJSONString(),
@@ -565,10 +567,10 @@ public class DevPortalRestApiManager {
         headers.put("Content-Type", "application/x-www-form-urlencoded");
         headers.put("Authorization", generateBasicAuthHeader(clientId, clientSecret));
 
-        GatewayHttpResponse response = null;
+        SimpleHttpResponse response = null;
 
         try {
-            response = client.send(new GatewayHttpRequest(
+            response = client.send(new SimpleHttpRequest(
                     "POST",
                     amHost + REST_API_RESOURCE_TOKEN,
                     convertToXWWWFormUrlEncoded(body),
@@ -633,7 +635,7 @@ public class DevPortalRestApiManager {
     }
 
     private static void handleExpectedHttpStatusResponse(
-            GatewayHttpResponse response,
+            SimpleHttpResponse response,
             int expectedHttpStatus,
             String errorMessage
     ) throws DevPortalRestApiManagerRuntimeException {
@@ -645,8 +647,8 @@ public class DevPortalRestApiManager {
               response.getBody(),
               errorMessage
             );
-            log.error(error);
-            throw new DevPortalRestApiManagerRuntimeException(error);
+            log.error(StringUtil.sanitizeString(error));
+            throw new DevPortalRestApiManagerRuntimeException(StringUtil.sanitizeString(error));
         }
     }
 

@@ -1,10 +1,10 @@
-package com.wso2.openbanking.uk.gateway.common.gatewayhttpclient;
+package com.wso2.openbanking.uk.common.model;
 
-public class GatewayHttpResponse {
+public class SimpleHttpResponse {
     private final int statusCode;
     private final String body;
 
-    public GatewayHttpResponse(int statusCode, String body) {
+    public SimpleHttpResponse(int statusCode, String body) {
         this.statusCode = statusCode;
         this.body = body;
     }

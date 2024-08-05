@@ -1,4 +1,4 @@
-package com.wso2.openbanking.uk.gateway.core.handler.dcr.jwt;
+package com.wso2.openbanking.uk.gateway.exception;
 
 public class JWTValidatorRuntimeException extends RuntimeException {
     public JWTValidatorRuntimeException(String message) {

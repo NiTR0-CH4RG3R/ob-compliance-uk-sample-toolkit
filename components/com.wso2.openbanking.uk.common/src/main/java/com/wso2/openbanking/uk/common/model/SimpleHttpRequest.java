@@ -1,14 +1,14 @@
-package com.wso2.openbanking.uk.gateway.common.gatewayhttpclient;
+package com.wso2.openbanking.uk.common.model;
 
 import java.util.Map;
 
-public class GatewayHttpRequest {
+public class SimpleHttpRequest {
     private final String method;
     private final String url;
     private final String body;
     private final Map<String, String> headers;
 
-    public GatewayHttpRequest(String method, String url, String body, Map<String, String> headers) {
+    public SimpleHttpRequest(String method, String url, String body, Map<String, String> headers) {
         this.method = method;
         this.url = url;
         this.body = body;
