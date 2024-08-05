@@ -6,6 +6,7 @@ import com.wso2.openbanking.uk.common.core.SimpleAbstractHttpClient;
 import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
+import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.common.util.StringUtil;
 import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
@@ -86,7 +87,7 @@ public class DevPortalRestApiManager {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -121,7 +122,7 @@ public class DevPortalRestApiManager {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -159,7 +160,7 @@ public class DevPortalRestApiManager {
         params.put("query", applicationName);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -167,7 +168,7 @@ public class DevPortalRestApiManager {
         try {
             response = client.send(new SimpleHttpRequest(
                     HttpMethod.GET,
-                    concatParamsToUrl(amHost + REST_API_RESOURCE_APPLICATION, params),
+                    HttpUtil.concatParamsToUrl(amHost + REST_API_RESOURCE_APPLICATION, params),
                     null,
                     headers
             ));
@@ -217,7 +218,7 @@ public class DevPortalRestApiManager {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -291,7 +292,7 @@ public class DevPortalRestApiManager {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -332,7 +333,7 @@ public class DevPortalRestApiManager {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -357,7 +358,7 @@ public class DevPortalRestApiManager {
         params.put("applicationId", applicationId);
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -365,7 +366,7 @@ public class DevPortalRestApiManager {
         try {
             response = client.send(new SimpleHttpRequest(
                     HttpMethod.GET,
-                    concatParamsToUrl(amHost + REST_API_RESOURCE_SUBSCRIPTION, params),
+                    HttpUtil.concatParamsToUrl(amHost + REST_API_RESOURCE_SUBSCRIPTION, params),
                     null,
                     headers
             ));
@@ -403,7 +404,7 @@ public class DevPortalRestApiManager {
         params.put("query", String.format("tag:%s", tag));
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -411,7 +412,7 @@ public class DevPortalRestApiManager {
         try {
             response = client.send(new SimpleHttpRequest(
                     HttpMethod.GET,
-                    concatParamsToUrl(amHost + REST_API_RESOURCE_APIS, params),
+                    HttpUtil.concatParamsToUrl(amHost + REST_API_RESOURCE_APIS, params),
                     null,
                     headers
             ));
@@ -456,7 +457,7 @@ public class DevPortalRestApiManager {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -491,7 +492,7 @@ public class DevPortalRestApiManager {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
-        headers.put("Authorization", generateBearerAuthHeader(accessToken));
+        headers.put("Authorization", HttpUtil.generateBearerAuthHeader(accessToken));
         headers.put("Accept", "application/json");
 
         SimpleHttpResponse response = null;
@@ -526,7 +527,7 @@ public class DevPortalRestApiManager {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
-        headers.put("Authorization", generateBasicAuthHeader(amUsername, amPassword));
+        headers.put("Authorization", HttpUtil.generateBasicAuthHeader(amUsername, amPassword));
 
         SimpleHttpResponse response = null;
 
@@ -566,7 +567,7 @@ public class DevPortalRestApiManager {
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/x-www-form-urlencoded");
-        headers.put("Authorization", generateBasicAuthHeader(clientId, clientSecret));
+        headers.put("Authorization", HttpUtil.generateBasicAuthHeader(clientId, clientSecret));
 
         SimpleHttpResponse response = null;
 
@@ -574,7 +575,7 @@ public class DevPortalRestApiManager {
             response = client.send(new SimpleHttpRequest(
                     HttpMethod.POST,
                     amHost + REST_API_RESOURCE_TOKEN,
-                    convertToXWWWFormUrlEncoded(body),
+                    HttpUtil.convertToXWWWFormUrlEncoded(body),
                     headers
             ));
         } catch (GatewayHttpClientRuntimeException e) {
@@ -594,45 +595,6 @@ public class DevPortalRestApiManager {
         }
 
         accessToken = (String) responseJson.get("access_token");
-    }
-
-    private static String convertToXWWWFormUrlEncoded(Map<String, String> data) {
-        StringBuilder encodedData = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : data.entrySet()) {
-            encodedData.append(entry.getKey());
-            encodedData.append("=");
-            encodedData.append(entry.getValue());
-            encodedData.append("&");
-        }
-
-        return encodedData.toString();
-    }
-
-    private static String concatParamsToUrl(String url, Map<String, String> params) {
-        StringBuilder urlBuilder = new StringBuilder(url);
-        urlBuilder.append("?");
-
-        for (Map.Entry<String, String> entry : params.entrySet()) {
-            urlBuilder.append(entry.getKey());
-            urlBuilder.append("=");
-            urlBuilder.append(entry.getValue());
-            urlBuilder.append("&");
-        }
-
-        return urlBuilder.toString();
-    }
-
-    private static String generateBasicAuthHeader(String username, String password) {
-        String credentials = username + ":" + password;
-        return "Basic " + new String(
-                Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8)),
-                StandardCharsets.UTF_8
-        );
-    }
-
-    private static String generateBearerAuthHeader(String token) {
-        return "Bearer " + token;
     }
 
     private static void handleExpectedHttpStatusResponse(

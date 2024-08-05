@@ -1,5 +1,6 @@
 package com.wso2.openbanking.uk.gateway.impl.handler;
 
+import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
 import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
 import com.wso2.openbanking.uk.common.util.StringUtil;
@@ -146,7 +147,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
                         StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_PUT)  ||
                         StringUtil.equalsIgnoreCase(httpMethod, HTTP_METHOD_DELETE)
         ) {
-            String clientIdSentInRequest = extractPathVariableSentAsLastSegment(
+            String clientIdSentInRequest = HttpUtil.extractPathVariableSentAsLastSegment(
                     requestContextDTO
                             .getMsgInfo()
                             .getResource()
@@ -192,8 +193,6 @@ public class DCRHandler extends OpenBankingAPIHandler {
                 );
             }
 
-            debugPrintJsonString(modifiedPayload);
-
             // Set the Content-Type header to application/json
             headers.replace(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
 
@@ -204,7 +203,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
         String password = IS_PASSWORD;
 
         // Generate the Basic Auth header
-        String basicAuthHeader = generateBasicAuthHeader(username, password);
+        String basicAuthHeader = HttpUtil.generateBasicAuthHeader(username, password);
 
         // Add the Basic Auth header to the request headers
         headers.put(HttpHeader.AUTHORIZATION, basicAuthHeader);
@@ -458,7 +457,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
             ExtensionResponseDTO extensionResponseDTO,
             ResponseContextDTO responseContextDTO
     ) throws OpenBankingAPIHandlerException {
-        String clientId = extractPathVariableSentAsLastSegment(
+        String clientId = HttpUtil.extractPathVariableSentAsLastSegment(
                 responseContextDTO
                         .getMsgInfo()
                         .getResource()
@@ -510,85 +509,4 @@ public class DCRHandler extends OpenBankingAPIHandler {
         }
     }
 
-    private static String extractPathVariableSentAsLastSegment(String resource) {
-        // If the resource ends with a "/", then remove it
-        if (resource.endsWith("/")) {
-            resource = resource.substring(0, resource.length() - 1);
-        }
-
-        // Split the resource by "/"
-        String[] segments = resource.split("/");
-
-        // Return the last segment
-        return segments[segments.length - 1];
-    }
-
-    private static String generateBasicAuthHeader(String username, String password) {
-        String credentials = username + ":" + password;
-        return "Basic " + new String(
-                Base64.getEncoder().encode(credentials.getBytes(StandardCharsets.UTF_8)),
-                StandardCharsets.UTF_8
-        );
-    }
-
-    private static void debugPrintJsonString(String requestPayload) {
-        Function<String, String[]> jsonLineSplitter = jsonString ->  {
-            List<String> lines = new ArrayList<>();
-            StringBuilder currentLine = new StringBuilder();
-            int indentLevel = 0;
-            boolean inQuotes = false;
-
-            for (char c : jsonString.toCharArray()) {
-                // Handle quotes for string literals in JSON
-                if (c == '\"') {
-                    inQuotes = !inQuotes;
-                }
-
-                // Handle newline characters
-                if (c == '\n' || c == '\r') {
-                    continue;
-                }
-
-                // Handle opening braces and brackets outside of quotes
-                if (!inQuotes && (c == '{' || c == '[')) {
-                    currentLine.append(c);
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
-                    indentLevel++;
-                    currentLine.append(" ".repeat(indentLevel * 2));
-                    continue;
-                }
-
-                // Handle closing braces and brackets outside of quotes
-                if (!inQuotes && (c == '}' || c == ']')) {
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
-                    indentLevel--;
-                    currentLine.append(" ".repeat(indentLevel * 2));
-                }
-
-                currentLine.append(c);
-
-                // Handle commas outside of quotes to split lines for objects and arrays
-                if (!inQuotes && c == ',') {
-                    lines.add(currentLine.toString());
-                    currentLine = new StringBuilder();
-                    currentLine.append(" ".repeat(indentLevel * 2));
-                }
-            }
-
-            // Add any remaining content in the buffer to the list
-            if (currentLine.length() > 0) {
-                lines.add(currentLine.toString());
-            }
-
-            // Convert the list to an array and return
-            return lines.toArray(new String[0]);
-        };
-
-        String[] jsonLines = jsonLineSplitter.apply(requestPayload);
-        for (String line : jsonLines) {
-            log.debug(line.replaceAll("[\r\n]", ""));
-        }
-    }
 }
