@@ -157,6 +157,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
             }
         }
 
+        // TODO : Get the IS admin username and password from APIMConfigurationManager
+        String username = IS_USERNAME;
+        String password = IS_PASSWORD;
+
         // Extract the payload and the headers from the request context
         String modifiedPayload = getPayload(requestContextDTO.getMsgInfo());
         Map<String, String> headers = requestContextDTO.getMsgInfo().getHeaders();
@@ -183,11 +187,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
             // Set the Content-Type header to application/json
             headers.replace(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
 
+            headers.put("WSO2-Identity-User", username);
         }
-
-        // TODO : Get the IS admin username and password from APIMConfigurationManager
-        String username = IS_USERNAME;
-        String password = IS_PASSWORD;
 
         // Generate the Basic Auth header
         String basicAuthHeader = HttpUtil.generateBasicAuthHeader(username, password);
@@ -349,10 +350,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
         }
 
         // Map the application keys to the application
-        String keyMappingId = null;
-
         try {
-            keyMappingId = devPortalRestApiManager.mapApplicationKeys(
+            devPortalRestApiManager.mapApplicationKeys(
                     devPortalApplication.getApplicationId(),
                     clientId,
                     clientSecret,
@@ -373,11 +372,6 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
             log.error("Error occurred while mapping the application keys", e);
             throw new OpenBankingAPIHandlerException("Error occurred while mapping the application keys", e);
-        }
-
-        if (keyMappingId == null) {
-            log.error("Key mapping ID is null");
-            throw new OpenBankingAPIHandlerException("Key mapping ID is null");
         }
 
         // Gat all the regulatory API IDs
@@ -464,10 +458,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
             throw new OpenBankingAPIHandlerException("Error occurred while mapping the application keys", e);
         }
 
-        if (keyMappingId == null) {
-            log.error("Key mapping ID is null");
-            throw new OpenBankingAPIHandlerException("Key mapping ID is null");
-        }
+//        if (keyMappingId == null) {
+//            log.error("Key mapping ID is null");
+//            throw new OpenBankingAPIHandlerException("Key mapping ID is null");
+//        }
     }
 
     private void processResponseForHttpMethodDelete(

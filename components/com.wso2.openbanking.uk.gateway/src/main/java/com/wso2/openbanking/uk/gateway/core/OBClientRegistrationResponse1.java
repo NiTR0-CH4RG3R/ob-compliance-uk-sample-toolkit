@@ -84,7 +84,7 @@ public class OBClientRegistrationResponse1 {
         obClientRegistrationResponse1.put("response_types", responseTypes);
 
         // Software Id
-        String softwareId = (String) softwareStatementJsonObject.get("client_name");
+        String softwareId = (String) responseJsonObject.get("client_name");
         obClientRegistrationResponse1.put("software_id", softwareId);
 
         // Scope
@@ -97,23 +97,28 @@ public class OBClientRegistrationResponse1 {
 
         // Application Type
         // NOTE :   Look for application_type in the software statement. If not available, set it to "web".
-        String applicationType = (String) softwareStatementJsonObject.get("application_type");
+        String applicationType = resolveFromResponseOrSoftwareStatement(
+                responseJsonObject,
+                softwareStatementJsonObject,
+                "application_type",
+                null
+        );
         obClientRegistrationResponse1.put("application_type", applicationType);
 
         // Id token signed response alg
-        String idTokenSignedResponseAlg = (String) softwareStatementJsonObject.get("id_token_signed_response_alg");
+        String idTokenSignedResponseAlg = (String) responseJsonObject.get("id_token_signed_response_alg");
         obClientRegistrationResponse1.put("id_token_signed_response_alg", idTokenSignedResponseAlg);
 
         // Token Endpoint Auth Signing Alg
-        String tokenEndpointAuthSigningAlg = (String) softwareStatementJsonObject.get("token_endpoint_auth_signing_alg");
+        String tokenEndpointAuthSigningAlg = (String) responseJsonObject.get("token_endpoint_auth_signing_alg");
         obClientRegistrationResponse1.put("token_endpoint_auth_signing_alg", tokenEndpointAuthSigningAlg);
 
         // Request Object Signing Alg
-        String requestObjectSigningAlg = (String) softwareStatementJsonObject.get("request_object_signing_alg");
+        String requestObjectSigningAlg = (String) responseJsonObject.get("request_object_signing_alg");
         obClientRegistrationResponse1.put("request_object_signing_alg", requestObjectSigningAlg);
 
         // TLS Client Auth Subject DN
-        String tlsClientAuthSubjectDN = (String) softwareStatementJsonObject.get("tls_client_auth_subject_dn");
+        String tlsClientAuthSubjectDN = (String) responseJsonObject.get("tls_client_auth_subject_dn");
         obClientRegistrationResponse1.put("tls_client_auth_subject_dn", tlsClientAuthSubjectDN);
 
         // Back Channel Token Delivery Mode

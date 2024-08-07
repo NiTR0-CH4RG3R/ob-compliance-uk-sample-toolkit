@@ -234,7 +234,17 @@ public class DevPortalRestApiManager {
             throw new DevPortalRestApiManagerRuntimeException("Failed to map the application keys", e);
         }
 
-        handleExpectedHttpStatusResponse(response, 200, "Failed to map the application keys");
+        // handleExpectedHttpStatusResponse(response, 200, "Failed to map the application keys");
+
+        // NOTE : The APIM response status code is 500 when the key mapping is successful
+        if (!(response.getStatusCode() == 200 || response.getStatusCode() == 500)) {
+            String error = String.format(
+                    "Failed to map the application keys. Status Code : %d | Response Body : %s",
+                    response.getStatusCode(),
+                    response.getBody()
+            );
+            throw new DevPortalRestApiManagerRuntimeException(error);
+        }
 
         JSONObject responseJson = null;
 
@@ -267,11 +277,11 @@ public class DevPortalRestApiManager {
 
         String keyMappingId = (String) responseJson.get("keyMappingId");
 
-        if (keyMappingId == null) {
-            String error = "Failed to map the application keys : Key Mapping ID is null";
-            log.error(error);
-            throw new DevPortalRestApiManagerRuntimeException(error);
-        }
+//        if (keyMappingId == null) {
+//            String error = "Failed to map the application keys : Key Mapping ID is null";
+//            log.error(error);
+//            throw new DevPortalRestApiManagerRuntimeException(error);
+//        }
 
         return keyMappingId;
     }

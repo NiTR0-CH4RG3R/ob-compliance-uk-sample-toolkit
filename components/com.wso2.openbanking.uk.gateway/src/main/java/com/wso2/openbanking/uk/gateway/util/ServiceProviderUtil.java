@@ -1,5 +1,6 @@
 package com.wso2.openbanking.uk.gateway.util;
 
+import com.wso2.openbanking.uk.gateway.core.JWTValidator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -7,121 +8,106 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ServiceProviderUtil {
     private static final Log log = LogFactory.getLog(ServiceProviderUtil.class);
 
-    private static class RequestClaimProperty {
-        final Class<?> type;
-        final boolean required;
-        final String equivalentKey;
-
-        public <T> RequestClaimProperty(Class<T> type, boolean required, String equivalentKey) {
-            this.type = type;
-            this.required = required;
-            this.equivalentKey = equivalentKey;
-        }
-
-        public <T> RequestClaimProperty(Class<T> type, boolean required) {
-            this(type, required, null);
-        }
-    }
-
-    private static final Map<String, RequestClaimProperty> requestClaimPropertyMap = new HashMap<>() {{
-        put("redirect_uris", new RequestClaimProperty(String[].class, true));
-        put("client_name", new RequestClaimProperty(String.class, true, "software_id"));
-        put("client_id", new RequestClaimProperty(String.class, false));
-        put("client_secret", new RequestClaimProperty(String.class, false));
-        put("grant_types", new RequestClaimProperty(String[].class, false));
-        put("application_type", new RequestClaimProperty(String.class, false));
-        put("jwks_uri", new RequestClaimProperty(String.class, false));
-        put("url", new RequestClaimProperty(String.class, false));
-        put("ext_param_client_id", new RequestClaimProperty(String.class, false));
-        put("ext_param_client_secret", new RequestClaimProperty(String.class, false));
-        put("contacts", new RequestClaimProperty(String[].class, false));
-        put("post_logout_redirect_uris", new RequestClaimProperty(String[].class, false));
-        put("request_uris", new RequestClaimProperty(String[].class, false));
-        put("response_types",  new RequestClaimProperty(String[].class, false));
-        put("ext_param_sp_template", new RequestClaimProperty(String.class, false));
-        put("backchannel_logout_uri", new RequestClaimProperty(String.class, false));
-        put("backchannel_logout_session_required", new RequestClaimProperty(Boolean.class, false));
-        put("ext_application_display_name", new RequestClaimProperty(String.class, false));
-        put("token_type_extension", new RequestClaimProperty(String.class, false));
-        put("ext_application_owner", new RequestClaimProperty(String.class, false));
-        put("ext_application_token_lifetime", new RequestClaimProperty(Integer.class, false));
-        put("ext_user_token_lifetime", new RequestClaimProperty(Integer.class, false));
-        put("ext_refresh_token_lifetime", new RequestClaimProperty(Integer.class, false));
-        put("ext_id_token_lifetime", new RequestClaimProperty(Integer.class, false));
-        put("ext_pkce_mandatory", new RequestClaimProperty(Boolean.class, false));
-        put("ext_pkce_support_plain", new RequestClaimProperty(Boolean.class, false));
-        put("ext_public_client", new RequestClaimProperty(Boolean.class, false));
-        put("token_endpoint_auth_method", new RequestClaimProperty(String.class, false));
-        put("token_endpoint_auth_signing_alg", new RequestClaimProperty(String.class, false));
-        put("sector_identifier_uri", new RequestClaimProperty(String.class, false));
-        put("id_token_signed_response_alg", new RequestClaimProperty(String.class, false));
-        put("id_token_encrypted_response_alg", new RequestClaimProperty(String.class, false));
-        put("id_token_encrypted_response_enc", new RequestClaimProperty(String.class, false));
-        put("software_statement", new RequestClaimProperty(String.class, false));
-        put("request_object_signing_alg", new RequestClaimProperty(String.class, false));
-        put("tls_client_auth_subject_dn", new RequestClaimProperty(String.class, false));
-        put("require_signed_request_object", new RequestClaimProperty(Boolean.class, false));
-        put("require_pushed_authorization_requests", new RequestClaimProperty(Boolean.class, false));
-        put("tls_client_certificate_bound_access_tokens", new RequestClaimProperty(Boolean.class, false));
-        put("subject_type", new RequestClaimProperty(String.class, false));
-        put("request_object_encryption_alg", new RequestClaimProperty(String.class, false));
-        put("request_object_encryption_enc", new RequestClaimProperty(String.class, false));
+    private static final Set<String> identityServerAcceptingClaims = new HashSet<>() {{
+        add("redirect_uris");
+        add("client_name");
+        add("client_id");
+        add("client_secret");
+        add("grant_types");
+        add("application_type");
+        add("jwks_uri");
+        add("url");
+        add("ext_param_client_id");
+        add("ext_param_client_secret");
+        add("contacts");
+        add("post_logout_redirect_uris");
+        add("request_uris");
+        add("response_types");
+        add("ext_param_sp_template");
+        add("backchannel_logout_uri");
+        add("backchannel_logout_session_required");
+        add("ext_application_display_name");
+        add("token_type_extension");
+        add("ext_application_owner");
+        add("ext_application_token_lifetime");
+        add("ext_user_token_lifetime");
+        add("ext_refresh_token_lifetime");
+        add("ext_id_token_lifetime");
+        add("ext_pkce_mandatory");
+        add("ext_pkce_support_plain");
+        add("ext_public_client");
+        add("token_endpoint_auth_method");
+        add("token_endpoint_auth_signing_alg");
+        add("sector_identifier_uri");
+        add("id_token_signed_response_alg");
+        add("id_token_encrypted_response_alg");
+        add("id_token_encrypted_response_enc");
+        add("software_statement");
+        add("request_object_signing_alg");
+        add("tls_client_auth_subject_dn");
+        add("require_signed_request_object");
+        add("require_pushed_authorization_requests");
+        add("tls_client_certificate_bound_access_tokens");
+        add("subject_type");
+        add("request_object_encryption_alg");
+        add("request_object_encryption_enc");
     }};
 
-
-    public static String convertOBClientRegistrationRequest1JsonStringToISDCRPayload(String jsonString) {
+    public static String convertOBClientRegistrationRequest1JsonStringToISDCRPayload(
+            String obClientRegistrationRequest1JsonString
+    ) {
         // Convert the JSON string to a map
-        JSONObject jsonObject = null;
+        JSONObject obClientRegistrationRequest1JsonObject = null;
         try {
-            jsonObject = (JSONObject) (new JSONParser()).parse(jsonString);
+            obClientRegistrationRequest1JsonObject = (JSONObject) (new JSONParser()).parse(
+                    obClientRegistrationRequest1JsonString
+            );
         } catch (ParseException e) {
             log.error("Error occurred while parsing the JSON string to a JSON object", e);
             return null;
         }
 
-        Map<String, Object> spDCRRequestClaims = new HashMap<>();
-        for (Map.Entry<String, RequestClaimProperty> entry : requestClaimPropertyMap.entrySet()) {
-            String key = entry.getKey();
-            RequestClaimProperty requestClaimProperty = entry.getValue();
-            Class<?> type = requestClaimProperty.type;
-            boolean required = requestClaimProperty.required;
+        JSONObject spDCRRequestClaims = new JSONObject();
 
-            if (!jsonObject.containsKey(key)) {
-                if (required) {
-                    if (requestClaimProperty.equivalentKey != null) {
-                        String equivalentKey = requestClaimProperty.equivalentKey;
-                        if (jsonObject.containsKey(equivalentKey) && jsonObject.get(equivalentKey) != null) {
-                            spDCRRequestClaims.put(key, jsonObject.get(equivalentKey));
-                            continue;
-                        }
-                    }
-
-//                    log.error(String.format("Required claim is missing: %s",
-//                            StringUtil.sanitizeString(key)));
-                    return null;
-                }
-
-//                log.warn(String.format("Optional claim is missing: %s",
-//                        StringUtil.sanitizeString(key)));
-                continue;
+        // Iterate through the JSON object and add the claims to the map
+        for (Object k : obClientRegistrationRequest1JsonObject.keySet()) {
+            String key = (String) k;
+            if (identityServerAcceptingClaims.contains(key)) {
+                spDCRRequestClaims.put(key, obClientRegistrationRequest1JsonObject.get(key));
             }
-
-            Object value = jsonObject.get(key);
-            if (!type.isInstance(value)) {
-//                log.warn(String.format("Invalid claim type for claim: %s. Expected %s, but found %s",
-//                        StringUtil.sanitizeString(key), type.getSimpleName(), value.getClass().getSimpleName()));
-            }
-
-            spDCRRequestClaims.put(key, value);
         }
 
-        spDCRRequestClaims.put("tls_client_certificate_bound_access_tokens", true);
+        // Set the client_name to the software_id
+        spDCRRequestClaims.put("client_name", obClientRegistrationRequest1JsonObject.get("software_id"));
 
-        return (new JSONObject(spDCRRequestClaims)).toJSONString();
+        spDCRRequestClaims.put("tls_client_certificate_bound_access_tokens", true);
+        spDCRRequestClaims.put("token_type_extension", "JWT");
+
+        // Extract the JWKS URI from the software statement and add it to the map
+        String softwareStatement = (String) obClientRegistrationRequest1JsonObject.get("software_statement");
+
+        JWTValidator softwareStatementJwtValidator = new JWTValidator(softwareStatement);
+
+        if (softwareStatement != null) {
+            try {
+                String jwksUri = (String) softwareStatementJwtValidator.getClaim(
+                        "software_jwks_endpoint", String.class
+                        );
+                if (jwksUri != null) {
+                    spDCRRequestClaims.put("jwks_uri", jwksUri);
+            }
+            } catch (Exception e) {
+                log.error("Error occurred while extracting the JWKS URI from the software statement", e);
+            }
+        }
+
+        return spDCRRequestClaims.toJSONString();
     }
 }
