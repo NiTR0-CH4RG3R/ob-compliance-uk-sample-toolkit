@@ -5,14 +5,12 @@ import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
 import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
 import com.wso2.openbanking.uk.common.util.StringUtil;
-import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
-import com.wso2.openbanking.uk.gateway.core.JWTValidator;
-import com.wso2.openbanking.uk.gateway.core.ServiceProvider;
+import com.wso2.openbanking.uk.gateway.core.*;
+import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerRuntimeException;
 import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import com.wso2.openbanking.uk.common.constants.HttpHeader;
 import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
-import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import org.apache.commons.logging.Log;
@@ -24,7 +22,6 @@ import org.wso2.carbon.apimgt.common.gateway.dto.*;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * This class is the handler for the Dynamic Client Registration (DCR) API.
@@ -173,12 +170,6 @@ public class DCRHandler extends OpenBankingAPIHandler {
                 throw new OpenBankingAPIHandlerException("Request payload is null");
             }
 
-//            // Validate the request payload
-//            if (!validateRequestPayload(modifiedPayload)) {
-//                log.error("Invalid request payload");
-//                throw new OpenBankingAPIHandlerException("Invalid request payload");
-//            }
-
             // Set the modified payload to the request context
             modifiedPayload = ServiceProvider.convertJsonStringToISDCRRequestJsonString(modifiedPayload);
 
@@ -225,16 +216,44 @@ public class DCRHandler extends OpenBankingAPIHandler {
                     responseContextDTO.getStatusCode(),
                     getPayload(responseContextDTO.getMsgInfo())
             );
-            log.error(StringUtil.sanitizeString(error));
+            // log.error(StringUtil.sanitizeString(error));
             throw new OpenBankingAPIHandlerException(StringUtil.sanitizeString(error));
         }
-        return null;
+
+        ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
+
+        // Convert the payload to the Open Banking compliant response
+        switch (HttpMethod.valueOf(responseContextDTO.getMsgInfo().getHttpMethod())) {
+            case GET:
+            case POST:
+            case PUT:
+                String payload = getPayload(responseContextDTO.getMsgInfo());
+                extensionResponseDTO.setHeaders(responseContextDTO.getMsgInfo().getHeaders());
+                OBClientRegistrationResponse1 obClientRegistrationResponse1 = new OBClientRegistrationResponse1(payload);
+                extensionResponseDTO.setPayload(
+                        new ByteArrayInputStream(
+                                obClientRegistrationResponse1
+                                        .getOBClientRegistrationResponse1()
+                                        .getBytes(StandardCharsets.UTF_8)
+                        )
+                );
+                break;
+            case DELETE:
+                break;
+            default:
+                String error = String.format("Unsupported HTTP method: %s",
+                        StringUtil.sanitizeString(responseContextDTO.getMsgInfo().getHttpMethod())
+                );
+                // log.error(StringUtil.sanitizeString(error));
+                throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + responseContextDTO.getMsgInfo().getHttpMethod());
+        }
+
+        return extensionResponseDTO;
     }
 
     @Override
     protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
             throws OpenBankingAPIHandlerException {
-
         ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
 
         String payload = getPayload(responseContextDTO.getMsgInfo());
@@ -262,7 +281,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
                 String error = String.format("Unsupported HTTP method: %s",
                         StringUtil.sanitizeString(httpMethod.name())
                 );
-                log.error(StringUtil.sanitizeString(error));
+                // log.error(StringUtil.sanitizeString(error));
                 throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + httpMethod.name());
         }
 
