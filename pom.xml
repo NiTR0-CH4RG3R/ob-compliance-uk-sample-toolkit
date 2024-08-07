@@ -169,9 +169,12 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
-<!--                        <suiteXmlFiles>-->
-<!--                            <suiteXmlFile>${project.basedir}/src/test/resources/testng.xml</suiteXmlFile>-->
-<!--                        </suiteXmlFiles>-->
+                        <includes>
+                            <include>**/*Test.java</include>
+                        </includes>
+                        <suiteXmlFiles>
+                            <suiteXmlFile>src/test/resources/testSuite.xml</suiteXmlFile>
+                        </suiteXmlFiles>
                     </configuration>
                 </plugin>
                 <plugin>

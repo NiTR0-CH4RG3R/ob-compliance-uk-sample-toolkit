@@ -1,0 +1,21 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="common-module-test-suite">
+    <test name="core">
+        <classes>
+            <class name="com.wso2.openbanking.uk.common.core.SimpleAbstractHttpClientTest"/>
+        </classes>
+    </test>
+    <test name="model">
+        <classes>
+            <class name="com.wso2.openbanking.uk.common.model.SimpleHttpRequestTest"/>
+            <class name="com.wso2.openbanking.uk.common.model.SimpleHttpResponseTest"/>
+        </classes>
+    </test>
+    <test name="util">
+        <classes>
+            <class name="com.wso2.openbanking.uk.common.util.HttpUtilTest"/>
+            <class name="com.wso2.openbanking.uk.common.util.StringUtilTest"/>
+        </classes>
+    </test>
+</suite>
