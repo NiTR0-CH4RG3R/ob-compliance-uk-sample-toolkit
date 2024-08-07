@@ -1,8 +1,6 @@
 package com.wso2.openbanking.uk.gateway.impl.handler;
 
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -16,6 +14,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
+/**
+ * This class tests the DCRHandler.
+ */
 public class DCRHandlerTest {
     DCRHandler dcrHandler = null;
 
@@ -39,7 +40,11 @@ public class DCRHandlerTest {
 
         MsgInfoDTO msgInfoDTO = new MsgInfoDTO();
         msgInfoDTO.setResource("/register");
-        msgInfoDTO.setHeaders(new HashMap<>(){{put("Content-Type", "application/json");}});
+        msgInfoDTO.setHeaders(
+                new HashMap<>() { {
+                    put("Content-Type", "application/json");
+                } }
+        );
         msgInfoDTO.setHttpMethod("POST");
         msgInfoDTO.setPayloadHandler(new PayloadHandler() {
             @Override
@@ -61,7 +66,8 @@ public class DCRHandlerTest {
         Assert.assertNotNull(extensionResponseDTO);
         Assert.assertEquals(extensionResponseDTO.getStatusCode(), 200);
         Assert.assertEquals(extensionResponseDTO.getHeaders().get("Content-Type"), "application/json");
-        Assert.assertEquals(extensionResponseDTO.getPayload(), new ByteArrayInputStream(modifiedPayload.getBytes(StandardCharsets.UTF_8)));
+        Assert.assertEquals(extensionResponseDTO.getPayload(),
+                new ByteArrayInputStream(modifiedPayload.getBytes(StandardCharsets.UTF_8)));
     }
 
 }

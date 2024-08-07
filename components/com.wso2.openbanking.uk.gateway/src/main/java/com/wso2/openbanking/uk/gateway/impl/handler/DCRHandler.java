@@ -1,27 +1,37 @@
 package com.wso2.openbanking.uk.gateway.impl.handler;
 
-import com.wso2.openbanking.uk.common.constants.HttpMethod;
-import com.wso2.openbanking.uk.common.util.HttpUtil;
-import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
-import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
-import com.wso2.openbanking.uk.common.util.StringUtil;
-import com.wso2.openbanking.uk.gateway.core.*;
-import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
-import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import com.wso2.openbanking.uk.common.constants.HttpHeader;
 import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
-import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
+import com.wso2.openbanking.uk.common.constants.HttpMethod;
+import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
+import com.wso2.openbanking.uk.common.util.HttpUtil;
+import com.wso2.openbanking.uk.common.util.StringUtil;
+import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
+import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
+import com.wso2.openbanking.uk.gateway.core.JWTValidator;
+import com.wso2.openbanking.uk.gateway.core.OBClientRegistrationResponse1;
+import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
+import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
+import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
+import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.util.ServiceProviderUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.wso2.carbon.apimgt.common.gateway.dto.*;
+import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * This class is the handler for the Dynamic Client Registration (DCR) API.
@@ -46,7 +56,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
                 amHost,
                 GatewayConstants.DEFAULT_AM_USERNAME,
                 GatewayConstants.DEFAULT_AM_PASSWORD
-                );
+        );
     }
 
     @Override
@@ -135,10 +145,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
         HttpMethod httpMethod = HttpMethod.valueOf(requestContextDTO.getMsgInfo().getHttpMethod());
 
         // If the request is a GET, PUT, or DELETE request, then the clientId sent in the path should be verified.
-        if(
+        if (
                 httpMethod.equals(HttpMethod.GET) ||
-                httpMethod.equals(HttpMethod.PUT) ||
-                httpMethod.equals(HttpMethod.DELETE)
+                        httpMethod.equals(HttpMethod.PUT) ||
+                        httpMethod.equals(HttpMethod.DELETE)
         ) {
             String clientIdSentInRequest = HttpUtil.extractPathVariableSentAsLastSegment(
                     requestContextDTO
@@ -167,7 +177,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         if (
                 httpMethod.equals(HttpMethod.POST) ||
-                httpMethod.equals(HttpMethod.PUT)
+                        httpMethod.equals(HttpMethod.PUT)
         ) {
             if (modifiedPayload == null) {
                 log.error("Request payload is null");
@@ -175,7 +185,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
             }
 
             // Set the modified payload to the request context
-            modifiedPayload = ServiceProviderUtil.convertOBClientRegistrationRequest1JsonStringToISDCRPayload(modifiedPayload);
+            modifiedPayload = ServiceProviderUtil
+                    .convertOBClientRegistrationRequest1JsonStringToISDCRPayload(modifiedPayload);
 
             if (modifiedPayload == null) {
                 log.error("Error occurred while mapping the request payload to the IS DCR API request");
@@ -210,7 +221,9 @@ public class DCRHandler extends OpenBankingAPIHandler {
     }
 
     @Override
-    protected ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) throws OpenBankingAPIHandlerException {
+    protected ExtensionResponseDTO preProcessResponse(
+            ResponseContextDTO responseContextDTO
+    ) throws OpenBankingAPIHandlerException {
         if (responseContextDTO.getStatusCode() < 200 || responseContextDTO.getStatusCode() >= 300) {
             String error = String.format(
                     "Backend responded with an error: %d %s",
@@ -230,7 +243,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
             case PUT:
                 String payload = getPayload(responseContextDTO.getMsgInfo());
                 extensionResponseDTO.setHeaders(responseContextDTO.getMsgInfo().getHeaders());
-                OBClientRegistrationResponse1 obClientRegistrationResponse1 = new OBClientRegistrationResponse1(payload);
+                OBClientRegistrationResponse1 obClientRegistrationResponse1 =
+                        new OBClientRegistrationResponse1(payload);
                 extensionResponseDTO.setPayload(
                         new ByteArrayInputStream(
                                 obClientRegistrationResponse1
@@ -246,7 +260,9 @@ public class DCRHandler extends OpenBankingAPIHandler {
                         StringUtil.sanitizeString(responseContextDTO.getMsgInfo().getHttpMethod())
                 );
                 // log.error(StringUtil.sanitizeString(error));
-                throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + responseContextDTO.getMsgInfo().getHttpMethod());
+                throw new OpenBankingAPIHandlerException(
+                        "Unsupported HTTP method: " + responseContextDTO.getMsgInfo().getHttpMethod()
+                );
         }
 
         return extensionResponseDTO;
@@ -386,7 +402,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
         List<String> subscriptionIds = null;
 
         try {
-            subscriptionIds = devPortalRestApiManager.subscribeToAPIs(devPortalApplication.getApplicationId(), apiIds.toArray(new String[0]));
+            subscriptionIds = devPortalRestApiManager.subscribeToAPIs(
+                    devPortalApplication.getApplicationId(),
+                    apiIds.toArray(new String[0])
+            );
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while subscribing to the regulatory APIs", e);
             throw new OpenBankingAPIHandlerException("Error occurred while subscribing to the regulatory APIs", e);
@@ -489,7 +508,8 @@ public class DCRHandler extends OpenBankingAPIHandler {
         List<String> subscriptionIds = null;
 
         try {
-            subscriptionIds = devPortalRestApiManager.getSubscriptionsByApplicationId(devPortalApplication.getApplicationId());
+            subscriptionIds = devPortalRestApiManager
+                    .getSubscriptionsByApplicationId(devPortalApplication.getApplicationId());
         } catch (DevPortalRestApiManagerRuntimeException e) {
             log.error("Error occurred while getting the subscriptions of the application in the APIM", e);
             throw new OpenBankingAPIHandlerException(

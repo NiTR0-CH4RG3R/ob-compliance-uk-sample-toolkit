@@ -2,6 +2,9 @@ package com.wso2.openbanking.uk.gateway.model;
 
 import java.util.Map;
 
+/**
+ * This class represents the DevPortalApplication model.
+ */
 public class DevPortalApplication {
     private final String applicationId;
     private final String name;
@@ -12,6 +15,18 @@ public class DevPortalApplication {
     private final Map<String, String> attributes;
     private final String[] subscriptionScopes;
 
+    /**
+     * Constructs a new DevPortalApplication with the specified details.
+     *
+     * @param applicationId      the application ID.
+     * @param name               the application name.
+     * @param throttlingPolicy   the throttling policy.
+     * @param description        the description.
+     * @param tokenType          the token type.
+     * @param groups             the groups.
+     * @param attributes         the attributes.
+     * @param subscriptionScopes the subscription scopes.
+     */
     public DevPortalApplication(
             String applicationId,
             String name,

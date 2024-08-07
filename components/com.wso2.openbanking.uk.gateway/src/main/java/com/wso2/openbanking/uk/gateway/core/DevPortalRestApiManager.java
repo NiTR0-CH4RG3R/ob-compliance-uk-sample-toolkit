@@ -1,6 +1,5 @@
 package com.wso2.openbanking.uk.gateway.core;
 
-
 import com.wso2.openbanking.uk.common.constants.HttpHeader;
 import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.common.constants.HttpMethod;
@@ -10,17 +9,26 @@ import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.common.util.StringUtil;
-import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
+import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import java.lang.reflect.Array;
-import java.util.*;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * This class handles the REST API calls to the WSO2 API Manager Developer Portal. It provides methods to create,
+ * retrieve, update, and delete applications, subscribe and unsubscribe to APIs, and search APIs by tag.
+ * All the authentication and token management are handled internally.
+ */
 public class DevPortalRestApiManager {
     private static final Log log = LogFactory.getLog(DevPortalRestApiManager.class);
 
@@ -48,6 +56,17 @@ public class DevPortalRestApiManager {
 
     private String accessToken;
 
+    /**
+     * Constructs a DevPortalRestApiManager.
+     *
+     * @param client     The SimpleAbstractHttpClient to use for the REST API calls.
+     * @param amHost     The host of the WSO2 API Manager. If null or empty, the default host will be used,
+     *                   which is "https://localhost:9443".
+     * @param amUsername The username to authenticate with the WSO2 API Manager. If null or empty, the default username
+     *                   will be used, which is "admin".
+     * @param amPassword The password to authenticate with the WSO2 API Manager. If null or empty, the default password
+     *                   will be used, which is "admin".
+     */
     public DevPortalRestApiManager(
             SimpleAbstractHttpClient client,
             String amHost,
@@ -64,15 +83,34 @@ public class DevPortalRestApiManager {
         this.amPassword = amPassword == null || amPassword.isBlank() ? DEFAULT_AM_PASSWORD : amPassword;
     }
 
+    /**
+     * Constructs a DevPortalRestApiManager with the default host, username, and password.
+     *
+     * @param client The SimpleAbstractHttpClient to use for the REST API calls.
+     */
     public DevPortalRestApiManager(SimpleAbstractHttpClient client) {
         this(client, null, null, null);
     }
 
+    /**
+     * Constructs a DevPortalRestApiManager with the default host and the given SimpleAbstractHttpClient.
+     *
+     * @param client The SimpleAbstractHttpClient to use for the REST API calls.
+     */
     public DevPortalRestApiManager(SimpleAbstractHttpClient client, String amHost) {
         this(client, amHost, null, null);
     }
 
-    public DevPortalApplication createApplication(DevPortalApplication application) throws DevPortalRestApiManagerRuntimeException {
+    /**
+     * Creates an application in the WSO2 API Manager Developer Portal.
+     *
+     * @param application The DevPortalApplication to create.
+     * @return The created DevPortalApplication.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while creating the application.
+     */
+    public DevPortalApplication createApplication(
+            DevPortalApplication application
+    ) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, Object> body = new HashMap<>();
@@ -117,7 +155,16 @@ public class DevPortalRestApiManager {
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public DevPortalApplication retrieveApplication(String applicationId) throws DevPortalRestApiManagerRuntimeException {
+    /**
+     * Retrieves an application from the WSO2 API Manager Developer Portal.
+     *
+     * @param applicationId The ID of the application to retrieve.
+     * @return The retrieved DevPortalApplication.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while retrieving the application.
+     */
+    public DevPortalApplication retrieveApplication(
+            String applicationId
+    ) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> headers = new HashMap<>();
@@ -152,7 +199,16 @@ public class DevPortalRestApiManager {
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
-    public List<DevPortalApplication> searchApplicationsByName(String applicationName) throws DevPortalRestApiManagerRuntimeException {
+    /**
+     * Searches applications in the WSO2 API Manager Developer Portal by name.
+     *
+     * @param applicationName The name of the applications to search.
+     * @return The list of DevPortalApplications that match the search criteria.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while searching the applications.
+     */
+    public List<DevPortalApplication> searchApplicationsByName(
+            String applicationName
+    ) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, String> params = new HashMap<>();
@@ -198,6 +254,17 @@ public class DevPortalRestApiManager {
         return applications;
     }
 
+    /**
+     * Maps the application keys to the application.
+     *
+     * @param applicationId  The ID of the application to map the keys.
+     * @param consumerKey    The consumer key to map.
+     * @param consumerSecret The consumer secret to map.
+     * @param keyManager     The key manager to map.
+     * @param isSandbox      Whether the keys are for the sandbox environment.
+     * @return The key mapping ID.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while mapping the application keys.
+     */
     public String mapApplicationKeys(
             String applicationId,
             String consumerKey,
@@ -286,6 +353,13 @@ public class DevPortalRestApiManager {
         return keyMappingId;
     }
 
+    /**
+     * Retrieves the application keys of an application.
+     *
+     * @param applicationId The ID of the application to retrieve the keys.
+     * @return The application keys.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while retrieving the application keys.
+     */
     public List<String> subscribeToAPIs(String applicationId, String[] apiIds) {
         authenticate();
 
@@ -338,6 +412,11 @@ public class DevPortalRestApiManager {
         return subscriptionIds;
     }
 
+    /**
+     * Unsubscribes from an API.
+     *
+     * @param subscriptionId The ID of the subscription to unsubscribe.
+     */
     public void unsubscribeToAPI(String subscriptionId) {
         authenticate();
 
@@ -360,6 +439,12 @@ public class DevPortalRestApiManager {
         }
     }
 
+    /**
+     * Retrieves all the subscriptions of an application.
+     *
+     * @param applicationId The ID of the application to retrieve the subscriptions.
+     * @return The list of subscription IDs.
+     */
     public List<String> getSubscriptionsByApplicationId(String applicationId) {
         authenticate();
 
@@ -406,6 +491,13 @@ public class DevPortalRestApiManager {
         return subscriptionIds;
     }
 
+    /**
+     * Searches APIs in the WSO2 API Manager Developer Portal by tag.
+     *
+     * @param tag The tag to search the APIs.
+     * @return The list of API IDs that match the search criteria.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while searching the APIs.
+     */
     public List<String> searchAPIsByTag(String tag) {
         authenticate();
 
@@ -452,7 +544,16 @@ public class DevPortalRestApiManager {
         return apiIds;
     }
 
-    public DevPortalApplication updateApplication(DevPortalApplication application) throws DevPortalRestApiManagerRuntimeException {
+    /**
+     * Updates an application in the WSO2 API Manager Developer Portal.
+     *
+     * @param application The DevPortalApplication to update.
+     * @return The updated DevPortalApplication.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while updating the application.
+     */
+    public DevPortalApplication updateApplication(
+            DevPortalApplication application
+    ) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
         Map<String, Object> body = new HashMap<>();
@@ -497,6 +598,12 @@ public class DevPortalRestApiManager {
         return mapJsonObjectToAPIMApplication(responseJson);
     }
 
+    /**
+     * Deletes an application from the WSO2 API Manager Developer Portal.
+     *
+     * @param applicationId The ID of the application to delete.
+     * @throws DevPortalRestApiManagerRuntimeException If an error occurs while deleting the application.
+     */
     public void deleteApplication(String applicationId) throws DevPortalRestApiManagerRuntimeException {
         authenticate();
 
@@ -542,11 +649,11 @@ public class DevPortalRestApiManager {
 
         try {
             response = client.send(new SimpleHttpRequest(
-                            HttpMethod.POST,
-                            clientRegistrationUrl,
-                            (new JSONObject(body)).toJSONString(),
-                            headers
-                    ));
+                    HttpMethod.POST,
+                    clientRegistrationUrl,
+                    (new JSONObject(body)).toJSONString(),
+                    headers
+            ));
         } catch (GatewayHttpClientRuntimeException e) {
             log.error("Failed to register the client", e);
             throw new DevPortalRestApiManagerRuntimeException("Failed to register the client", e);
@@ -613,11 +720,11 @@ public class DevPortalRestApiManager {
     ) throws DevPortalRestApiManagerRuntimeException {
         if (response.getStatusCode() != expectedHttpStatus) {
             String error = String.format(
-              "Expected status code %d, but received %d. Response Body : %s | %s",
-              expectedHttpStatus,
-              response.getStatusCode(),
-              response.getBody(),
-              errorMessage
+                    "Expected status code %d, but received %d. Response Body : %s | %s",
+                    expectedHttpStatus,
+                    response.getStatusCode(),
+                    response.getBody(),
+                    errorMessage
             );
             // log.error(StringUtil.sanitizeString(error));
             throw new DevPortalRestApiManagerRuntimeException(StringUtil.sanitizeString(error));

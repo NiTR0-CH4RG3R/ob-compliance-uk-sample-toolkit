@@ -3,6 +3,9 @@ package com.wso2.openbanking.uk.gateway.util;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * This class tests the ServiceProviderUtil.
+ */
 public class ServiceProviderUtilTest {
     @Test
     public void testConvertOBClientRegistrationRequest1JsonStringToISDCRPayload() {

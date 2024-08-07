@@ -7,15 +7,16 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+/**
+ * This class contains utility methods for Identity Server Information handling.
+ */
 public class ServiceProviderUtil {
     private static final Log log = LogFactory.getLog(ServiceProviderUtil.class);
 
-    private static final Set<String> identityServerAcceptingClaims = new HashSet<>() {{
+    private static final Set<String> identityServerAcceptingClaims = new HashSet<>() { {
         add("redirect_uris");
         add("client_name");
         add("client_id");
@@ -58,8 +59,14 @@ public class ServiceProviderUtil {
         add("subject_type");
         add("request_object_encryption_alg");
         add("request_object_encryption_enc");
-    }};
+    } };
 
+    /**
+     * This method converts an OBClientRegistrationRequest1 JSON string to an IS Dynamic Client Registration Payload.
+     *
+     * @param obClientRegistrationRequest1JsonString the OB Client Registration Request 1 JSON string.
+     * @return the ISD Client Registration Payload.
+     */
     public static String convertOBClientRegistrationRequest1JsonStringToISDCRPayload(
             String obClientRegistrationRequest1JsonString
     ) {

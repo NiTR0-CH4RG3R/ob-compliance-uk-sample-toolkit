@@ -1,7 +1,11 @@
 package com.wso2.openbanking.uk.gateway.constants;
 
+/**
+ * This class contains the constants used in the Gateway. Please keep in mind that the constants that start with
+ * DEFAULT_* are just the default values and can be overridden by the configurations. So please refer to the
+ * configurations for the actual values.
+ */
 public class GatewayConstants {
-    // NOTE : These are the default values. These can be overridden by the configurations.
     public static final String DEFAULT_IS_HOST = "https://localhost:9446";
     public static final String DEFAULT_AM_HOST = "https://localhost:9443";
 

@@ -1,8 +1,5 @@
 package com.wso2.openbanking.uk.gateway.core;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSVerifier;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
@@ -13,6 +10,7 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import com.wso2.openbanking.uk.common.util.SkipTestCoverage;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import net.minidev.json.JSONObject;
 import org.apache.commons.logging.Log;
@@ -20,17 +18,16 @@ import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+/**
+ * JWT Validator class to validate the format, and signature of a JWT using JWKS. This class can also be used to
+ * retrieve claims from the JWT.
+ */
 public class JWTValidator {
     private static final Log log = LogFactory.getLog(JWTValidator.class);
 
@@ -42,18 +39,47 @@ public class JWTValidator {
     private int connectionTimeout = 0;
     private int readTimeout = 0;
 
-    public JWTValidator(String jwt) {
+    /**
+     * Constructor to create a JWTValidator object with the given JWT, connection timeout, and read timeout.
+     *
+     * @param jwt               The JWT to validate.
+     * @param connectionTimeout The connection timeout in milliseconds.
+     * @param readTimeout       The read timeout in milliseconds.
+     */
+    public JWTValidator(String jwt, int connectionTimeout, int readTimeout) {
         this.jwt = jwt;
-
-        connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
-        readTimeout = DEFAULT_READ_TIMEOUT;
+        this.connectionTimeout = connectionTimeout;
+        this.readTimeout = readTimeout;
     }
 
+    /**
+     * Constructor to create a JWTValidator object with the given JWT.
+     *
+     * @param jwt The JWT to validate.
+     */
+    public JWTValidator(String jwt) {
+        this(jwt, DEFAULT_CONNECTION_TIMEOUT, DEFAULT_READ_TIMEOUT);
+    }
+
+    /**
+     * Get the JWT.
+     *
+     * @return The JWT.
+     */
     public String getJwt() {
         return jwt;
     }
 
-    public boolean validateSignatureUsingJWKS(String jwkSetEndpoint) {
+    /**
+     * Validate the signature of the JWT using public key retrieved from a REST endpoint. If the endpoint need Mutual
+     * TLS, then the endpoint's public certificate must be in the truststore.
+     *
+     * @param jwkSetEndpoint JWK Set endpoint.
+     * @return True if the signature can be validated using the public keys retrieved from the endpoint.
+     * @throws JWTValidatorRuntimeException If any error occurs.
+     */
+    @SkipTestCoverage(message = "Testing on this function is skipped due to it involving sending a http request")
+    public boolean validateSignatureUsingJWKS(String jwkSetEndpoint) throws JWTValidatorRuntimeException {
         // If the JWT is malformed or not in the correct format, return false
         if (!validateJwt()) {
             log.error("Invalid JWT format");
@@ -109,10 +135,24 @@ public class JWTValidator {
         }
     }
 
+    /**
+     * Validates the format of the JWT.
+     *
+     * @return True if the given string is a valid JWT.
+     */
     public boolean validateJwt() {
         return validateJwt(jwt);
     }
 
+    /**
+     * Extract claims from the JWT body, and cast it into a given class type.
+     *
+     * @param key   Key of the claim.
+     * @param clazz Class type you want to cast the value of the claim.
+     * @param <T>   Class Type.
+     * @return The value of the claim. Returns null if the key doesn't exist.
+     * @throws JWTValidatorRuntimeException If the given claim cannot be cast to the given type.
+     */
     public <T> T getClaim(String key, Class<T> clazz) {
         Map<String, Object> claims = getClaims();
 
@@ -134,6 +174,11 @@ public class JWTValidator {
                 clazz.getName(), claim.getClass().getName()));
     }
 
+    /**
+     * Get the JWT body claims as a java Map.
+     *
+     * @return Claim map.
+     */
     public Map<String, Object> getClaims() {
         if (!validateJwt()) {
             log.error("Invalid JWT format");
@@ -156,6 +201,11 @@ public class JWTValidator {
         }
     }
 
+    /**
+     * Get the JWT body as a JSON string.
+     *
+     * @return JSON String.
+     */
     public String getJSONString() {
         Map<String, Object> claims = getClaims();
         return new JSONObject(claims).toJSONString();

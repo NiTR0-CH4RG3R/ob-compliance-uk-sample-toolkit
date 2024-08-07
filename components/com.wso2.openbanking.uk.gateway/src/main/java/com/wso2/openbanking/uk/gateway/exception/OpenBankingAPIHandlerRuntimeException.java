@@ -6,10 +6,21 @@ package com.wso2.openbanking.uk.gateway.exception;
  * a custom exception type that is derived from this type.
  */
 public class OpenBankingAPIHandlerRuntimeException extends RuntimeException {
+    /**
+     * Constructs a new OpenBankingAPIHandlerRuntimeException with the specified detail message.
+     *
+     * @param message the detail message.
+     */
     public OpenBankingAPIHandlerRuntimeException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a new OpenBankingAPIHandlerRuntimeException with the specified detail message and cause.
+     *
+     * @param message the detail message.
+     * @param cause   the cause.
+     */
     public OpenBankingAPIHandlerRuntimeException(String message, Throwable cause) {
         super(message, cause);
     }

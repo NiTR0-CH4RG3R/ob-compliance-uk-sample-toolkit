@@ -6,14 +6,17 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.List;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
+/**
+ * This class tests the DevPortalRestApiManager.
+ */
 public class DevPortalRestApiManagerTest {
 
     private DevPortalRestApiManager devPortalRestApiManager;
@@ -95,7 +98,10 @@ public class DevPortalRestApiManagerTest {
 
     @Test(dependsOnMethods = "retrieveApplicationTest")
     public void searchApplicationsByNameTest() {
-        DevPortalApplication[] devPortalApplications = devPortalRestApiManager.searchApplicationsByName(applicationName).toArray(new DevPortalApplication[0]);
+        DevPortalApplication[] devPortalApplications =
+                devPortalRestApiManager
+                        .searchApplicationsByName(applicationName)
+                        .toArray(new DevPortalApplication[0]);
 
         Assert.assertNotNull(devPortalApplications);
         Assert.assertTrue(devPortalApplications.length > 0);
@@ -131,7 +137,9 @@ public class DevPortalRestApiManagerTest {
     @Test(dependsOnMethods = {"retrieveApplicationTest", "mapApplicationKeysTest"})
     public void subscribeToAPIsTest() {
         String[] apiIds = new String[]{expectedApiId};
-        List<String> subscriptionIds = devPortalRestApiManager.subscribeToAPIs(applicationId, new String[]{expectedApiId});
+        List<String> subscriptionIds =
+                devPortalRestApiManager.
+                        subscribeToAPIs(applicationId, new String[]{expectedApiId});
         Assert.assertFalse(false);
         subscriptionId = subscriptionIds.get(0);
         Assert.assertNotNull(subscriptionIds);

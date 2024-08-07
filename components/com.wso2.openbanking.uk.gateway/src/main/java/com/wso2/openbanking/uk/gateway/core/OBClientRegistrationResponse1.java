@@ -6,17 +6,34 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+/**
+ * This class responsible for converting the response came from the Identity Server DCR endpoint to UK spec compliant
+ * DCR response. OBClientRegistrationResponse1 to be exact.
+ */
 public class OBClientRegistrationResponse1 {
     private final String spServiceProviderResponse;
 
-    public OBClientRegistrationResponse1( String spServiceProviderResponse ) {
+    /**
+     * Construct an OBClientRegistrationResponse1 object.
+     *
+     * @param spServiceProviderResponse The response returned from the IS DCR endpoint. This MUST be a JSON String.
+     */
+    public OBClientRegistrationResponse1(String spServiceProviderResponse) {
         this.spServiceProviderResponse = spServiceProviderResponse;
     }
 
+    /**
+     * @return Returns the IS DCR response given to the object at the creation.
+     */
     public String getSpServiceProviderResponse() {
         return spServiceProviderResponse;
     }
 
+    /**
+     * @return The UK spec complaint DCR response as a JSON string.
+     * @throws OpenBankingAPIHandlerRuntimeException If the provided response, or its software statement cause any
+     *                                               parsing exceptions.
+     */
     public String getOBClientRegistrationResponse1() throws OpenBankingAPIHandlerRuntimeException {
         JSONObject responseJsonObject = null;
         try {
@@ -73,8 +90,8 @@ public class OBClientRegistrationResponse1 {
         obClientRegistrationResponse1.put("grant_types", grantTypes);
 
         // Response Types
-        // NOTE :   The response_types value is not available in the SP response. Need to get the value from the software statement.
-        //          If the value is not available in the software statement, set it to empty.
+        // NOTE :   The response_types value is not available in the SP response. Need to get the value from
+        //          the software statement. If the value is not available in the software statement, set it to empty.
         JSONArray responseTypes = resolveFromResponseOrSoftwareStatement(
                 responseJsonObject,
                 softwareStatementJsonObject,
@@ -140,7 +157,10 @@ public class OBClientRegistrationResponse1 {
                 "backchannel_client_notification_endpoint",
                 null
         );
-        obClientRegistrationResponse1.put("backchannel_client_notification_endpoint", backChannelClientNotificationEndpoint);
+        obClientRegistrationResponse1.put(
+                "backchannel_client_notification_endpoint",
+                backChannelClientNotificationEndpoint
+        );
 
         // Back Channel Authentication Request Signing Alg
         String backChannelAuthenticationRequestSigningAlg = resolveFromResponseOrSoftwareStatement(
@@ -149,7 +169,10 @@ public class OBClientRegistrationResponse1 {
                 "backchannel_authentication_request_signing_alg",
                 null
         );
-        obClientRegistrationResponse1.put("backchannel_authentication_request_signing_alg", backChannelAuthenticationRequestSigningAlg);
+        obClientRegistrationResponse1.put(
+                "backchannel_authentication_request_signing_alg",
+                backChannelAuthenticationRequestSigningAlg
+        );
 
         // Back Channel User Code Parameter Supported
         boolean backChannelUserCodeParameterSupported = resolveFromResponseOrSoftwareStatement(
@@ -159,7 +182,10 @@ public class OBClientRegistrationResponse1 {
                 false
         );
 
-        obClientRegistrationResponse1.put("backchannel_user_code_parameter_supported", backChannelUserCodeParameterSupported);
+        obClientRegistrationResponse1.put(
+                "backchannel_user_code_parameter_supported",
+                backChannelUserCodeParameterSupported
+        );
 
 
         return obClientRegistrationResponse1.toJSONString();
@@ -177,8 +203,7 @@ public class OBClientRegistrationResponse1 {
             result = (T) request.get(key);
         } else if (softwareStatement != null && softwareStatement.get(key) != null) {
             result = (T) softwareStatement.get(key);
-        }
-        else {
+        } else {
             result = defaultValue;
         }
 

@@ -1,11 +1,18 @@
 package com.wso2.openbanking.uk.gateway.core;
 
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
-import graphql.Assert;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.carbon.apimgt.common.gateway.dto.*;
+import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
 
+/**
+ * This class tests the OpenBankingAPIHandler.
+ */
 public class OpenBankingAPIHandlerTest {
 
     private OpenBankingAPIHandler openBankingAPIHandler = new OpenBankingAPIHandler();

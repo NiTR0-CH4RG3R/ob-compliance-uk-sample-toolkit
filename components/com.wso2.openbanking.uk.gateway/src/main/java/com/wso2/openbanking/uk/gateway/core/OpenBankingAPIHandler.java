@@ -7,7 +7,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.XML;
-import org.wso2.carbon.apimgt.common.gateway.dto.*;
+import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseStatus;
+import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
+import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
+
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -24,11 +30,24 @@ public class OpenBankingAPIHandler {
 
     private OpenBankingAPIHandler nextHandler = null;
 
+    /**
+     * Set the next handler of the chain. And returns the next handler reference.
+     *
+     * @param nextHandler The next handler after this node.
+     * @return The next handler. Use this to set the next handler.
+     */
     public OpenBankingAPIHandler setNextHandler(OpenBankingAPIHandler nextHandler) {
         this.nextHandler = nextHandler;
         return nextHandler;
     }
 
+    /**
+     * Calls the preProcessRequest() method of this handler if the canProcess() function returns true. Otherwise,
+     * pass the execution to the handlePreProcessRequest() function of the next handler in chain.
+     *
+     * @param requestContextDTO The request context received from the preProcessRequest() of the Listener Impl class.
+     * @return ExtensionResponseDTO returned from the preProcessRequest() function of the processed handler.
+     */
     public ExtensionResponseDTO handlePreProcessRequest(RequestContextDTO requestContextDTO) {
         if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
             ExtensionResponseDTO responseDTO = null;
@@ -48,6 +67,13 @@ public class OpenBankingAPIHandler {
         return null;
     }
 
+    /**
+     * Calls the postProcessRequest() method of this handler if the canProcess() function returns true. Otherwise,
+     * pass the execution to the handlePostProcessRequest() function of the next handler in chain.
+     *
+     * @param requestContextDTO The request context received from the postProcessRequest() of the Listener Impl class.
+     * @return ExtensionResponseDTO returned from the postProcessRequest() function of the processed handler.
+     */
     public ExtensionResponseDTO handlePostProcessRequest(RequestContextDTO requestContextDTO) {
         if (canProcess(requestContextDTO.getMsgInfo(), requestContextDTO.getApiRequestInfo())) {
             ExtensionResponseDTO responseDTO = null;
@@ -67,6 +93,13 @@ public class OpenBankingAPIHandler {
         return null;
     }
 
+    /**
+     * Calls the preProcessResponse() method of this handler if the canProcess() function returns true. Otherwise,
+     * pass the execution to the handlePreProcessResponse() function of the next handler in chain.
+     *
+     * @param responseContextDTO The request response received from the preProcessResponse() of the Listener Impl class.
+     * @return ExtensionResponseDTO returned from the preProcessResponse() function of the processed handler.
+     */
     public ExtensionResponseDTO handlePreProcessResponse(ResponseContextDTO responseContextDTO) {
         if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
             ExtensionResponseDTO responseDTO = null;
@@ -86,6 +119,14 @@ public class OpenBankingAPIHandler {
         return null;
     }
 
+    /**
+     * Calls the postProcessResponse() method of this handler if the canProcess() function returns true. Otherwise,
+     * pass the execution to the handlePostProcessResponse() function of the next handler in chain.
+     *
+     * @param responseContextDTO The request response received from the postProcessResponse() of the Listener
+     *                           Impl class.
+     * @return ExtensionResponseDTO returned from the postProcessResponse() function of the processed handler.
+     */
     public ExtensionResponseDTO handlePostProcessResponse(ResponseContextDTO responseContextDTO) {
         if (canProcess(responseContextDTO.getMsgInfo(), responseContextDTO.getApiRequestInfo())) {
             ExtensionResponseDTO responseDTO = null;
@@ -105,6 +146,14 @@ public class OpenBankingAPIHandler {
         return null;
     }
 
+    /**
+     * This method must return true if the particular handle must be processed. Any new handler must override this
+     * method and provide its own implementation. Otherwise, it will use this implementation.
+     *
+     * @param msgInfoDTO MsgInfoDTO object received from the RequestContextDTO or ResponseContextDTO.
+     * @param apiRequestInfoDTO APIRequestInfoDTO object received from the RequestContextDTO or ResponseContextDTO.
+     * @return True if the handle must be processed.
+     */
     protected boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
         return false;
     }
@@ -131,6 +180,12 @@ public class OpenBankingAPIHandler {
 
     // Some utility functions
 
+    /**
+     * Extract the payload as a string received from the request or the response.
+     *
+     * @param msgInfoDTO  MsgInfoDTO object received from the RequestContextDTO or ResponseContextDTO.
+     * @return The extracted payload.
+     */
     protected static String getPayload(MsgInfoDTO msgInfoDTO) {
         String contentType = msgInfoDTO.getHeaders().get(HttpHeader.CONTENT_TYPE);
 
