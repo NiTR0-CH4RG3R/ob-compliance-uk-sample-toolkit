@@ -6,13 +6,13 @@ import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
 import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
 import com.wso2.openbanking.uk.common.util.StringUtil;
 import com.wso2.openbanking.uk.gateway.core.*;
-import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerRuntimeException;
 import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import com.wso2.openbanking.uk.common.constants.HttpHeader;
 import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
+import com.wso2.openbanking.uk.gateway.util.ServiceProviderUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -171,7 +171,7 @@ public class DCRHandler extends OpenBankingAPIHandler {
             }
 
             // Set the modified payload to the request context
-            modifiedPayload = ServiceProvider.convertJsonStringToISDCRRequestJsonString(modifiedPayload);
+            modifiedPayload = ServiceProviderUtil.convertOBClientRegistrationRequest1JsonStringToISDCRPayload(modifiedPayload);
 
             if (modifiedPayload == null) {
                 log.error("Error occurred while mapping the request payload to the IS DCR API request");

@@ -1,6 +1,5 @@
-package com.wso2.openbanking.uk.gateway.core;
+package com.wso2.openbanking.uk.gateway.util;
 
-import com.wso2.openbanking.uk.common.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
@@ -10,8 +9,8 @@ import org.json.simple.parser.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ServiceProvider {
-    private static final Log log = LogFactory.getLog(ServiceProvider.class);
+public class ServiceProviderUtil {
+    private static final Log log = LogFactory.getLog(ServiceProviderUtil.class);
 
     private static class RequestClaimProperty {
         final Class<?> type;
@@ -75,11 +74,7 @@ public class ServiceProvider {
     }};
 
 
-    public ServiceProvider() {
-
-    }
-
-    public static String convertJsonStringToISDCRRequestJsonString(String jsonString) {
+    public static String convertOBClientRegistrationRequest1JsonStringToISDCRPayload(String jsonString) {
         // Convert the JSON string to a map
         JSONObject jsonObject = null;
         try {
