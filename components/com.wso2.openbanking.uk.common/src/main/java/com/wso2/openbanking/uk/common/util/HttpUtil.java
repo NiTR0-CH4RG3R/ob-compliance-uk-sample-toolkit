@@ -23,6 +23,8 @@ public class HttpUtil {
             encodedData.append("&");
         }
 
+        encodedData.deleteCharAt(encodedData.length() - 1);
+
         return encodedData.toString();
     }
 
@@ -36,6 +38,8 @@ public class HttpUtil {
             urlBuilder.append(entry.getValue());
             urlBuilder.append("&");
         }
+
+        urlBuilder.deleteCharAt(urlBuilder.length() - 1);
 
         return urlBuilder.toString();
     }
