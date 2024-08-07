@@ -10,7 +10,6 @@ import com.nimbusds.jose.util.ResourceRetriever;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
-import com.wso2.openbanking.uk.common.util.SkipTestCoverage;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import net.minidev.json.JSONObject;
 import org.apache.commons.logging.Log;
@@ -78,7 +77,6 @@ public class JWTValidator {
      * @return True if the signature can be validated using the public keys retrieved from the endpoint.
      * @throws JWTValidatorRuntimeException If any error occurs.
      */
-    @SkipTestCoverage(message = "Testing on this function is skipped due to it involving sending a http request")
     public boolean validateSignatureUsingJWKS(String jwkSetEndpoint) throws JWTValidatorRuntimeException {
         // If the JWT is malformed or not in the correct format, return false
         if (!validateJwt()) {
@@ -153,7 +151,7 @@ public class JWTValidator {
      * @return The value of the claim. Returns null if the key doesn't exist.
      * @throws JWTValidatorRuntimeException If the given claim cannot be cast to the given type.
      */
-    public <T> T getClaim(String key, Class<T> clazz) {
+    public <T> T getClaim(String key, Class<T> clazz) throws JWTValidatorRuntimeException {
         Map<String, Object> claims = getClaims();
 
         if (!claims.containsKey(key)) {
