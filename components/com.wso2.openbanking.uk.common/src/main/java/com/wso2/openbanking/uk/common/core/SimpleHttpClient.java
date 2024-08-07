@@ -6,13 +6,16 @@ import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import com.wso2.openbanking.uk.common.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+/**
+ * This class provides a simple http client implementation. It sends a SimpleHttpRequest and returns a
+ * SimpleHttpResponse. It uses the java.net.http.HttpClient to send the request.
+ */
 public class SimpleHttpClient implements SimpleAbstractHttpClient {
     private static final Log log = LogFactory.getLog(SimpleHttpClient.class);
     private final HttpClient client;
@@ -21,6 +24,13 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
         client = HttpClient.newHttpClient();
     }
 
+    /**
+     * Sends a SimpleHttpRequest and returns a SimpleHttpResponse.
+     *
+     * @param request The SimpleHttpRequest to send.
+     * @return The SimpleHttpResponse.
+     * @throws GatewayHttpClientRuntimeException If an error occurs while sending the request.
+     */
     @Override
     public SimpleHttpResponse send(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
         HttpRequest.Builder requestBuilder = null;

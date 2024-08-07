@@ -2,11 +2,17 @@ package com.wso2.openbanking.uk.common.util;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class tests the HttpUtil implementation.
+ */
 public class HttpUtilTest {
+
+    /**
+     * Tests the generateBasicAuthHeader method of the HttpUtil.
+     */
     @Test
     public void testGenerateBasicAuthHeader() {
         String username = "admin";
@@ -18,12 +24,15 @@ public class HttpUtilTest {
         Assert.assertEquals(actual, expected);
     }
 
+    /**
+     * Tests the convertToXWWWFormUrlEncoded method of the HttpUtil.
+     */
     @Test
     public void testConvertToXWWWFormUrlEncoded() {
-        Map<String, String> data = new HashMap<>(){{
+        Map<String, String> data = new HashMap<>() { {
             put("key1", "value1");
             put("key2", "value2");
-        }};
+        } };
 
         String actual = HttpUtil.convertToXWWWFormUrlEncoded(data);
         String expected = "key1=value1&key2=value2";
@@ -31,13 +40,16 @@ public class HttpUtilTest {
         Assert.assertEquals(actual, expected);
     }
 
+    /**
+     * Tests the concatParamsToUrl method of the HttpUtil.
+     */
     @Test
     public void testConcatParamsToUrl() {
         String url = "http://localhost:8080";
-        Map<String, String> params = new HashMap<>(){{
+        Map<String, String> params = new HashMap<>() { {
             put("key1", "value1");
             put("key2", "value2");
-        }};
+        } };
 
         String actual = HttpUtil.concatParamsToUrl(url, params);
         String expected = "http://localhost:8080?key1=value1&key2=value2";
@@ -45,6 +57,9 @@ public class HttpUtilTest {
         Assert.assertEquals(actual, expected);
     }
 
+    /**
+     * Tests the generateBearerAuthHeader method of the HttpUtil.
+     */
     @Test
     public void testGenerateBearerAuthHeader() {
         String token = "token";
@@ -53,6 +68,9 @@ public class HttpUtilTest {
         Assert.assertEquals(actual, expected);
     }
 
+    /**
+     * Tests the extractPathVariableSentAsLastSegment method of the HttpUtil.
+     */
     @Test
     public void testExtractPathVariableSentAsLastSegment() {
         String resource = "http://localhost:8080/resource";

@@ -5,11 +5,22 @@ package com.wso2.openbanking.uk.common.exception;
  * must throw an OpenBankingException or a custom exception type that is derived from this type.
  */
 public class OpenBankingException extends Exception {
-        public OpenBankingException(String message) {
+    /**
+     * Constructs a new OpenBankingException with the specified detail message.
+     *
+     * @param message The detail message.
+     */
+    public OpenBankingException(String message) {
             super(message);
-        }
+    }
 
-        public OpenBankingException(String message, Throwable cause) {
-            super(message, cause);
-        }
+    /**
+     * Constructs a new OpenBankingException with the specified detail message and cause.
+     *
+     * @param message The detail message.
+     * @param cause   The cause.
+     */
+    public OpenBankingException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

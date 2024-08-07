@@ -6,9 +6,15 @@ import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+/**
+ * This class tests the SimpleAbstractHttpClient implementation.
+ */
 public class SimpleAbstractHttpClientTest {
     SimpleHttpClient gatewayHttpClient = new SimpleHttpClient();
 
+    /**
+     * Tests the send method of the SimpleHttpClient.
+     */
     @Test
     public void testSend() {
         SimpleHttpRequest request = new SimpleHttpRequest(
