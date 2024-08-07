@@ -106,20 +106,20 @@ public class ServiceProvider {
                         }
                     }
 
-                    log.error(String.format("Required claim is missing: %s",
-                            StringUtil.sanitizeString(key)));
+//                    log.error(String.format("Required claim is missing: %s",
+//                            StringUtil.sanitizeString(key)));
                     return null;
                 }
 
-                log.warn(String.format("Optional claim is missing: %s",
-                        StringUtil.sanitizeString(key)));
+//                log.warn(String.format("Optional claim is missing: %s",
+//                        StringUtil.sanitizeString(key)));
                 continue;
             }
 
             Object value = jsonObject.get(key);
             if (!type.isInstance(value)) {
-                log.warn(String.format("Invalid claim type for claim: %s. Expected %s, but found %s",
-                        StringUtil.sanitizeString(key), type.getSimpleName(), value.getClass().getSimpleName()));
+//                log.warn(String.format("Invalid claim type for claim: %s. Expected %s, but found %s",
+//                        StringUtil.sanitizeString(key), type.getSimpleName(), value.getClass().getSimpleName()));
             }
 
             spDCRRequestClaims.put(key, value);

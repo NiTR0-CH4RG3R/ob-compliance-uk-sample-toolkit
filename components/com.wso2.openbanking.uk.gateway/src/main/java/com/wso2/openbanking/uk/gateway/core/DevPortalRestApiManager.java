@@ -609,7 +609,7 @@ public class DevPortalRestApiManager {
               response.getBody(),
               errorMessage
             );
-            log.error(StringUtil.sanitizeString(error));
+            // log.error(StringUtil.sanitizeString(error));
             throw new DevPortalRestApiManagerRuntimeException(StringUtil.sanitizeString(error));
         }
     }
