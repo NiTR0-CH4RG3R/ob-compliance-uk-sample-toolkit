@@ -16,7 +16,7 @@ import java.util.Set;
 public class ServiceProviderUtil {
     private static final Log log = LogFactory.getLog(ServiceProviderUtil.class);
 
-    private static final Set<String> identityServerAcceptingClaims = new HashSet<>() { {
+    private static final Set<String> identityServerAcceptingClaims = new HashSet<String>() { {
         add("redirect_uris");
         add("client_name");
         add("client_id");
