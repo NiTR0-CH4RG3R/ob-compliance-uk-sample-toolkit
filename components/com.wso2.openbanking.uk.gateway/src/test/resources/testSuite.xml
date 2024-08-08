@@ -1,0 +1,27 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="common-module-test-suite">
+    <test name="core">
+        <classes>
+            <class name="com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManagerTest"/>
+            <class name="com.wso2.openbanking.uk.gateway.core.JWTValidatorTest"/>
+            <class name="com.wso2.openbanking.uk.gateway.core.OBClientRegistrationResponse1Test"/>
+            <class name="com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandlerTest"/>
+        </classes>
+    </test>
+    <test name="impl.handler">
+        <classes>
+            <class name="com.wso2.openbanking.uk.gateway.impl.handler.DCRHandlerTest"/>
+        </classes>
+    </test>
+    <test name="model">
+        <classes>
+            <class name="com.wso2.openbanking.uk.gateway.model.DevPortalApplicationTest"/>
+        </classes>
+    </test>
+    <test name="util">
+        <classes>
+            <class name="com.wso2.openbanking.uk.gateway.util.ServiceProviderUtilTest"/>
+        </classes>
+    </test>
+</suite>
