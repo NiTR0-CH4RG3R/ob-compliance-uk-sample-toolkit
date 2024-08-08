@@ -15,7 +15,7 @@ import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
  */
 public class OpenBankingAPIHandlerTest {
 
-    private OpenBankingAPIHandler openBankingAPIHandler = new OpenBankingAPIHandler();
+    private final OpenBankingAPIHandler openBankingAPIHandler = new OpenBankingAPIHandler();
 
     private static boolean isPreProcessRequest = false;
     private static boolean isPostProcessRequest = false;
