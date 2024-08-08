@@ -245,10 +245,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
                 extensionResponseDTO.setHeaders(responseContextDTO.getMsgInfo().getHeaders());
                 OBClientRegistrationResponse1 obClientRegistrationResponse1 =
                         new OBClientRegistrationResponse1(payload);
+                String modifiedPayload = obClientRegistrationResponse1.getOBClientRegistrationResponse1();
                 extensionResponseDTO.setPayload(
                         new ByteArrayInputStream(
-                                obClientRegistrationResponse1
-                                        .getOBClientRegistrationResponse1()
+                                modifiedPayload
                                         .getBytes(StandardCharsets.UTF_8)
                         )
                 );
