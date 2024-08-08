@@ -10,16 +10,12 @@ import java.util.Map;
  * This class tests the SimpleHttpRequest implementation.
  */
 public class SimpleHttpRequestTest {
-
-    /**
-     * Tests the SimpleHttpRequest constructor.
-     */
     @Test
     public void testSimpleHttpRequest() {
         HttpMethod httpMethod = HttpMethod.GET;
         String url = "http://www.example.com/";
         String body = "body";
-        Map<String, String> headers = new HashMap<>() { {
+        Map<String, String> headers = new HashMap<String, String>() { {
             put("header1", "value1");
             put("header2", "value2");
         } };

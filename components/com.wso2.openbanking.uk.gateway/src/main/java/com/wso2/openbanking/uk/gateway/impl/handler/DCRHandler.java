@@ -39,7 +39,6 @@ import java.util.Map;
 public class DCRHandler extends OpenBankingAPIHandler {
     private static final Log log = LogFactory.getLog(DCRHandler.class);
 
-    // TODO : This is a temporary solution. Need to be removed once the proper authentication mechanism is implemented.
     private static final String IS_USERNAME = "admin";
     private static final String IS_PASSWORD = "admin";
 
@@ -48,7 +47,6 @@ public class DCRHandler extends OpenBankingAPIHandler {
     public DCRHandler() {
         super();
 
-        // TODO : Get the AM host from APIMConfigurationManager
         String amHost = GatewayConstants.DEFAULT_AM_HOST;
 
         devPortalRestApiManager = new DevPortalRestApiManager(
@@ -167,7 +165,6 @@ public class DCRHandler extends OpenBankingAPIHandler {
             }
         }
 
-        // TODO : Get the IS admin username and password from APIMConfigurationManager
         String username = IS_USERNAME;
         String password = IS_PASSWORD;
 

@@ -29,7 +29,7 @@ public class HttpUtilTest {
      */
     @Test
     public void testConvertToXWWWFormUrlEncoded() {
-        Map<String, String> data = new HashMap<>() { {
+        Map<String, String> data = new HashMap<String, String>() { {
             put("key1", "value1");
             put("key2", "value2");
         } };
@@ -46,7 +46,7 @@ public class HttpUtilTest {
     @Test
     public void testConcatParamsToUrl() {
         String url = "http://localhost:8080";
-        Map<String, String> params = new HashMap<>() { {
+        Map<String, String> params = new HashMap<String, String>() { {
             put("key1", "value1");
             put("key2", "value2");
         } };

@@ -1,9 +1,18 @@
 package com.wso2.openbanking.uk.gateway.core;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 import javax.net.ssl.SSLContext;
@@ -15,8 +24,53 @@ import javax.net.ssl.X509TrustManager;
  */
 public class JWTValidatorTest {
 
-    @BeforeMethod
-    public void setUp() throws Exception {
+    InetSocketAddress address = new InetSocketAddress(8000);
+    HttpServer httpServer = null;
+
+    String jwkSetEndpointResponse = "{\n" +
+            "  \"keys\" : [ {\n" +
+            "    \"kid\" : \"7eJ8S_ZgvlYxFAFSghV9xMJROvk\",\n" +
+            "    \"kty\" : \"RSA\",\n" +
+            "    \"n\" : \"qLfocPSmvHU3el9p8lzqlIyDSLSM6JCu35ZnoamEpSEDYmtsHFZO9ptfVDuGJ-XlRuQE6SefdILKoGmU9KqSxgt09JyRvYntRUuPvo7tGQQugUP69KtDwVYSfyVe_hSJLzKW-Wsg9rz6lW0DA64jf9gWaoHWVweAEjwQQsNRYddKnc6GRwqOubvq3WxDPS2yaLlodlHcVdvR0AJA750ZqQh6urNSYB1xwu1a5IkxP5vtzsgMOb8hH8xXuKiXTjJ4GQ6Vat4go6odTXo8jc389IwS33okBQpn-fRULTHhgdoFgNfbux_gbKm5uCaRx3ghsb_xcS4erciTzigSk_lARQ\",\n" +
+            "    \"e\" : \"AQAB\",\n" +
+            "    \"use\" : \"sig\",\n" +
+            "    \"x5c\" : [ \"MIIFLTCCBBWgAwIBAgIEWcbiiDANBgkqhkiG9w0BAQsFADBTMQswCQYDVQQGEwJHQjEUMBIGA1UEChMLT3BlbkJhbmtpbmcxLjAsBgNVBAMTJU9wZW5CYW5raW5nIFByZS1Qcm9kdWN0aW9uIElzc3VpbmcgQ0EwHhcNMjMxMTE1MDUxMDA4WhcNMjQxMjE1MDU0MDA4WjBhMQswCQYDVQQGEwJHQjEUMBIGA1UEChMLT3BlbkJhbmtpbmcxGzAZBgNVBAsTEjAwMTU4MDAwMDFIUVFyWkFBWDEfMB0GA1UEAxMWakZRdVE0ZVFiTkNNU3FkQ29nMjFuRjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKi36HD0prx1N3pfafJc6pSMg0i0jOiQrt+WZ6GphKUhA2JrbBxWTvabX1Q7hifl5UbkBOknn3SCyqBplPSqksYLdPSckb2J7UVLj76O7RkELoFD+vSrQ8FWEn8lXv4UiS8ylvlrIPa8+pVtAwOuI3/YFmqB1lcHgBI8EELDUWHXSp3OhkcKjrm76t1sQz0tsmi5aHZR3FXb0dACQO+dGakIerqzUmAdccLtWuSJMT+b7c7IDDm/IR/MV7iol04yeBkOlWreIKOqHU16PI3N/PSMEt96JAUKZ/n0VC0x4YHaBYDX27sf4Gypubgmkcd4IbG/8XEuHq3Ik84oEpP5QEUCAwEAAaOCAfkwggH1MA4GA1UdDwEB/wQEAwIGwDAVBgNVHSUEDjAMBgorBgEEAYI3CgMMMIHgBgNVHSAEgdgwgdUwgdIGCysGAQQBqHWBBgFkMIHCMCoGCCsGAQUFBwIBFh5odHRwOi8vb2IudHJ1c3Rpcy5jb20vcG9saWNpZXMwgZMGCCsGAQUFBwICMIGGDIGDVXNlIG9mIHRoaXMgQ2VydGlmaWNhdGUgY29uc3RpdHV0ZXMgYWNjZXB0YW5jZSBvZiB0aGUgT3BlbkJhbmtpbmcgUm9vdCBDQSBDZXJ0aWZpY2F0aW9uIFBvbGljaWVzIGFuZCBDZXJ0aWZpY2F0ZSBQcmFjdGljZSBTdGF0ZW1lbnQwbQYIKwYBBQUHAQEEYTBfMCYGCCsGAQUFBzABhhpodHRwOi8vb2IudHJ1c3Rpcy5jb20vb2NzcDA1BggrBgEFBQcwAoYpaHR0cDovL29iLnRydXN0aXMuY29tL29iX3BwX2lzc3VpbmdjYS5jcnQwOgYDVR0fBDMwMTAvoC2gK4YpaHR0cDovL29iLnRydXN0aXMuY29tL29iX3BwX2lzc3VpbmdjYS5jcmwwHwYDVR0jBBgwFoAUUHORxiFy03f0/gASBoFceXluP1AwHQYDVR0OBBYEFKjCef/JxD+ND9eSb7hQlmEhSxUqMA0GCSqGSIb3DQEBCwUAA4IBAQCnKH9FdLmJMruX2qfbrpT0qaV8bP7xa9UDRYSMsAWC2kqCxs8CJmARt5+xsxBW6P65+mkLS2vXgQl7J8RTMiQVnHJvvNaldYnV6odsYOqvv+vGib8Qe0gKWSjih+Gd1Ct4UQFtn6P3ph+6OBB0OieZb7DYXqPJrX5UlG7K2fQ40MdFgBdeQZ3iNkXi43UIrQ5cF4cjYavmEFRmYeHya8AKfNCiWly15mNazW/X6SWf7pz+yk/l+gBv0wm3QT7ANXGf8izgoh6T5fmixPXSbdn8RUIV0kXp2TRRZ+CYUWBPJc3PvRXiiEEo2eHLXfEHG2jzrt1iKnjk6hzuC1hUzK0t\" ],\n" +
+            "    \"x5t\" : \"ov8shjyB_TDmFYr4e-1DQThUMSs=\",\n" +
+            "    \"x5u\" : \"https://keystore.openbankingtest.org.uk/0015800001HQQrZAAX/7eJ8S_ZgvlYxFAFSghV9xMJROvk.pem\",\n" +
+            "    \"x5t#S256\" : \"xZbIpA5FEBBmyOTOZTXH4v4URSMckOAxDMNWrFRtqGE=\"\n" +
+            "  }, {\n" +
+            "    \"kid\" : \"7x6UrhU-Yj1Aa9Ird03JJCcDurs\",\n" +
+            "    \"kty\" : \"RSA\",\n" +
+            "    \"n\" : \"myUaNObS1bCecqALtY2pRJg3FuVRGQnKgPlS5KbOmwzmeVQEDFjEGDO1OjTrYskQvNRPMD_2SAsgwyCP7AbU5LjvlAKB7KgObB_RI-4VEGXQbQCPEC8nPOzZqKPPGJhFspRriCY7Uo9TdeXPz2aLyXCNNmXG0aTcAHAEbh_mdrlNju5kyWBY9cOdODsJzUfiasxsQWRRpeZvpmGEa2nQkvTj7gunXpBauCIeuWin4_xt36nCaY6Yu6CVMgSH6_33eP7u_wFdip2ZhDeeiI6Er3KcU8PUDu6uubvU-CS6r5aTkcK8yIErvNnhKf0UOi_KQMplMVgyWhUNcuGZ8NCuZw\",\n" +
+            "    \"e\" : \"AQAB\",\n" +
+            "    \"use\" : \"tls\",\n" +
+            "    \"x5c\" : [ \"MIIFODCCBCCgAwIBAgIEWcbiiTANBgkqhkiG9w0BAQsFADBTMQswCQYDVQQGEwJHQjEUMBIGA1UEChMLT3BlbkJhbmtpbmcxLjAsBgNVBAMTJU9wZW5CYW5raW5nIFByZS1Qcm9kdWN0aW9uIElzc3VpbmcgQ0EwHhcNMjMxMTE1MDUxMDMxWhcNMjQxMjE1MDU0MDMxWjBhMQswCQYDVQQGEwJHQjEUMBIGA1UEChMLT3BlbkJhbmtpbmcxGzAZBgNVBAsTEjAwMTU4MDAwMDFIUVFyWkFBWDEfMB0GA1UEAxMWakZRdVE0ZVFiTkNNU3FkQ29nMjFuRjCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJslGjTm0tWwnnKgC7WNqUSYNxblURkJyoD5UuSmzpsM5nlUBAxYxBgztTo062LJELzUTzA/9kgLIMMgj+wG1OS475QCgeyoDmwf0SPuFRBl0G0AjxAvJzzs2aijzxiYRbKUa4gmO1KPU3Xlz89mi8lwjTZlxtGk3ABwBG4f5na5TY7uZMlgWPXDnTg7Cc1H4mrMbEFkUaXmb6ZhhGtp0JL04+4Lp16QWrgiHrlop+P8bd+pwmmOmLuglTIEh+v993j+7v8BXYqdmYQ3noiOhK9ynFPD1A7urrm71Pgkuq+Wk5HCvMiBK7zZ4Sn9FDovykDKZTFYMloVDXLhmfDQrmcCAwEAAaOCAgQwggIAMA4GA1UdDwEB/wQEAwIHgDAgBgNVHSUBAf8EFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwgeAGA1UdIASB2DCB1TCB0gYLKwYBBAGodYEGAWQwgcIwKgYIKwYBBQUHAgEWHmh0dHA6Ly9vYi50cnVzdGlzLmNvbS9wb2xpY2llczCBkwYIKwYBBQUHAgIwgYYMgYNVc2Ugb2YgdGhpcyBDZXJ0aWZpY2F0ZSBjb25zdGl0dXRlcyBhY2NlcHRhbmNlIG9mIHRoZSBPcGVuQmFua2luZyBSb290IENBIENlcnRpZmljYXRpb24gUG9saWNpZXMgYW5kIENlcnRpZmljYXRlIFByYWN0aWNlIFN0YXRlbWVudDBtBggrBgEFBQcBAQRhMF8wJgYIKwYBBQUHMAGGGmh0dHA6Ly9vYi50cnVzdGlzLmNvbS9vY3NwMDUGCCsGAQUFBzAChilodHRwOi8vb2IudHJ1c3Rpcy5jb20vb2JfcHBfaXNzdWluZ2NhLmNydDA6BgNVHR8EMzAxMC+gLaArhilodHRwOi8vb2IudHJ1c3Rpcy5jb20vb2JfcHBfaXNzdWluZ2NhLmNybDAfBgNVHSMEGDAWgBRQc5HGIXLTd/T+ABIGgVx5eW4/UDAdBgNVHQ4EFgQU7T6cMtCSQTT5JWW3O6vifRUSdpkwDQYJKoZIhvcNAQELBQADggEBAE9jrd/AE65vy3SEWdmFKPS4su7uEHy+KH18PETV6jMF2UFIJAOx7jl+5a3O66NkcpxFPeyvSuH+6tAAr2ZjpoQwtW9tZ9k2KSOdNOiJeQgjavwQC6t/BHI3yXWOIQm445BUN1cV9pagcRJjRyL3SPdHVoRfIbF7VI/+ULHwWdZYPXxtwUoda1mQFf6a+2lO4ziUHb3U8iD90FBURzID7WJ1ODSeB5zE/hG9Sxd9wlSXvl1oNmc/ha5oG/7rJpRqrx5Dcq3LEoX9iZZ3knHLkCm/abIQ7Nff8GQytuGhnGZxmGFYKDXdKElcl9dAlZ3bIK2I+I6jD2z2XvSfrhFyRjU=\" ],\n" +
+            "    \"x5t\" : \"i_rXxQv8kzzoPawCeJN_KdafnDA=\",\n" +
+            "    \"x5u\" : \"https://keystore.openbankingtest.org.uk/0015800001HQQrZAAX/7x6UrhU-Yj1Aa9Ird03JJCcDurs.pem\",\n" +
+            "    \"x5t#S256\" : \"807-E8KgUMV6dRHTQi1_QYo5eyPvjmjbxCtunbFixV0=\"\n" +
+            "  }, {\n" +
+            "    \"kid\" : \"Pn7wWY8GW2wX4sT8rKVgUSR0WJU\",\n" +
+            "    \"kty\" : \"RSA\",\n" +
+            "    \"n\" : \"2-1zVMBojig-vQ--UopUalovrUQxHgSAJ6gwOJOH-mDCEXUly0KGxu60UfiTpLm0tf6UH74fNVH01DqfP6DL9T17pk_RHDfALdSFRMU37iKZNlOB6uYrEODgL3-crOvgengMWNs9YoQR5gHF3uJJEczJh8PihRfbJOanjsHMdBwuGfDEMh38rQ6P4LEeTc8MtdR2qNm3R3DfFJZu0GrR5g-xdSFZ4XV1ik8Ad4lGjATK-84clJmwsgjGLHvP57R6BvJjj8K8nPfQ2Cxd9der_KVV6W5QMVokCk_fcAyfvrOAHILcYOC-NeB_EiIqEm4dxNH9RVzRf_7gxZNiMq6Q8Q\",\n" +
+            "    \"e\" : \"AQAB\",\n" +
+            "    \"use\" : \"enc\"\n" +
+            "  }, {\n" +
+            "    \"kid\" : \"_R4CIMA-v0c1SRr9eHzVC-PWj8Y\",\n" +
+            "    \"kty\" : \"RSA\",\n" +
+            "    \"n\" : \"yUSmfxrRo3JIL4Ivvx_M-_fWiU-V63lw4S1TLr0zguI4ZBcCC8ivg8V7O-VWGd69W21V0afYmBs0rVOoz30G4VChu84INM3izd-6us3GcNaIUyXMaXv75v4Cuj0zcdoaR0AGKflJAwuLTDZlkBpqFT6QDZ90kCOxxjAu0I3maL_4X6XeMm9StHbK9lsmHU7jXhk980qQEextjbbsA3xjXsIVmi7xigMG2CTrmegEP233JuGJOi57R7gVpi0xR66firAw7OXY4fl7R1QKzX5iibDDQqYOkxGk5MPP0dKPmxDezQvlLC8Cynh7x9QD_bagPIdtJlijw4HCHuehfVCsQQ\",\n" +
+            "    \"e\" : \"AQAB\",\n" +
+            "    \"use\" : \"enc\"\n" +
+            "  }, {\n" +
+            "    \"kid\" : \"u_XAGF_C6ehevwr0udpSGThM8Co\",\n" +
+            "    \"kty\" : \"RSA\",\n" +
+            "    \"n\" : \"0cw7xXPJgtUyzjgIUTPI-j30lgYtQRVpPJXVkCEvBL8xsR6t6OL6DnaVZMd54VuUweg5vW0-oMhVhFkshbxRPXRDsBl0-wvUZegUyYmZ2vModazMlhAIbmZ6Xma2k15sURUWaVj4msfLrFrEML8CsHsxrhzc5lTDgtI3ZDq37pKv8CzDyzzxtdgSng-DJCb1Arg5MhFuPZ1vE1dh8nqALoS4zOr9tNIcZod9GUEaX1G22b0XDO2caj8ePer9Tem_GG0JmQJA29vJN3WdroHeyAKkqFqvmuCPYFfmv3du857N3hXoXxETX1dSLuWGob9-IArtstARg_n9vwaVeygIuQ\",\n" +
+            "    \"e\" : \"AQAB\",\n" +
+            "    \"use\" : \"sig\"\n" +
+            "  } ]\n" +
+            "}";
+
+    @BeforeClass
+    public void setUp() throws NoSuchAlgorithmException, KeyManagementException {
         // Bypass SSL certificate in order to test the signature validation using JWKSetURL. This is not required for
         // production code as we are already using openbanking.atlassian issued root and issuer certificates.
         SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -35,8 +89,31 @@ public class JWTValidatorTest {
                 }
         }, new java.security.SecureRandom());
         SSLContext.setDefault(sslContext);
+
+        try {
+            httpServer = HttpServer.create(address, 0);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        HttpHandler handler = new HttpHandler() {
+            public void handle(HttpExchange exchange) throws IOException {
+                byte[] response = jwkSetEndpointResponse.getBytes();
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK,
+                        response.length);
+                exchange.getResponseBody().write(response);
+                exchange.close();
+            }
+        };
+
+        httpServer.createContext("/jwks", handler);
+        httpServer.start();
     }
 
+    @AfterClass
+    public void tearDown() {
+        httpServer.stop(0);
+    }
 
     @Test
     public void testValidateSignatureUsingJWKS() {
@@ -99,7 +176,7 @@ public class JWTValidatorTest {
                         "yU28ICr4-6BzCCZPIGzoYt4x5nIq1WR6U_YeE_cdJBduFaK7ukcFAHqznGgesZydUxEGK1XCE-w";
         JWTValidator jwtValidator = new JWTValidator(jwt);
 
-        String jwkSetURL = "https://keystore.openbankingtest.org.uk/0015800001HQQrZAAX/jFQuQ4eQbNCMSqdCog21nF.jwks";
+        String jwkSetURL = "http://localhost:8000/jwks";
 
         boolean result = false;
         try {

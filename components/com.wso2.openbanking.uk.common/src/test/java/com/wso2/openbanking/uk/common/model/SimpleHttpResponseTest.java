@@ -17,7 +17,7 @@ public class SimpleHttpResponseTest {
     public void testSimpleHttpResponse() {
         int statusCode = 200;
         String body = "body";
-        Map<String, String> headers = new HashMap<>() { {
+        Map<String, String> headers = new HashMap<String, String>() { {
             put("header1", "value1");
             put("header2", "value2");
         } };

@@ -3,7 +3,7 @@
 <suite name="common-module-test-suite">
     <test name="core">
         <classes>
-            <class name="com.wso2.openbanking.uk.common.core.SimpleAbstractHttpClientTest"/>
+            <class name="com.wso2.openbanking.uk.common.core.SimpleHttpClientTest"/>
         </classes>
     </test>
     <test name="model">
