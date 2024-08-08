@@ -3,7 +3,6 @@
 <suite name="common-module-test-suite">
     <test name="core">
         <classes>
-            <class name="com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManagerTest"/>
             <class name="com.wso2.openbanking.uk.gateway.core.JWTValidatorTest"/>
             <class name="com.wso2.openbanking.uk.gateway.core.OBClientRegistrationResponse1Test"/>
             <class name="com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandlerTest"/>

@@ -3,24 +3,17 @@ package com.wso2.openbanking.uk.gateway.impl.handler;
 import com.wso2.openbanking.uk.common.constants.HttpHeader;
 import com.wso2.openbanking.uk.common.constants.HttpHeaderContentType;
 import com.wso2.openbanking.uk.common.constants.HttpMethod;
-import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
 import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.common.util.StringUtil;
 import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
-import com.wso2.openbanking.uk.gateway.core.DevPortalRestApiManager;
 import com.wso2.openbanking.uk.gateway.core.JWTValidator;
 import com.wso2.openbanking.uk.gateway.core.OBClientRegistrationResponse1;
 import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
-import com.wso2.openbanking.uk.gateway.exception.DevPortalRestApiManagerRuntimeException;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
-import com.wso2.openbanking.uk.gateway.model.DevPortalApplication;
 import com.wso2.openbanking.uk.gateway.util.ServiceProviderUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.wso2.carbon.apimgt.common.gateway.dto.APIRequestInfoDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.ExtensionResponseDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
@@ -29,7 +22,6 @@ import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -42,19 +34,10 @@ public class DCRHandler extends OpenBankingAPIHandler {
     private static final String IS_USERNAME = "admin";
     private static final String IS_PASSWORD = "admin";
 
-    private DevPortalRestApiManager devPortalRestApiManager = null;
-
     public DCRHandler() {
         super();
 
         String amHost = GatewayConstants.DEFAULT_AM_HOST;
-
-        devPortalRestApiManager = new DevPortalRestApiManager(
-                new SimpleHttpClient(),
-                amHost,
-                GatewayConstants.DEFAULT_AM_USERNAME,
-                GatewayConstants.DEFAULT_AM_PASSWORD
-        );
     }
 
     @Override
@@ -264,277 +247,4 @@ public class DCRHandler extends OpenBankingAPIHandler {
 
         return extensionResponseDTO;
     }
-
-    @Override
-    protected ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO)
-            throws OpenBankingAPIHandlerException {
-        ExtensionResponseDTO extensionResponseDTO = new ExtensionResponseDTO();
-
-        String payload = getPayload(responseContextDTO.getMsgInfo());
-        extensionResponseDTO.setHeaders(responseContextDTO.getMsgInfo().getHeaders());
-
-        if (payload != null) {
-            extensionResponseDTO.setPayload(new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)));
-        }
-
-        HttpMethod httpMethod = HttpMethod.valueOf(responseContextDTO.getMsgInfo().getHttpMethod());
-
-        switch (httpMethod) {
-            case GET:
-                break;
-            case POST:
-                processResponseForHttpMethodPost(extensionResponseDTO, responseContextDTO);
-                break;
-            case PUT:
-                processResponseForHttpMethodPut(extensionResponseDTO, responseContextDTO);
-                break;
-            case DELETE:
-                processResponseForHttpMethodDelete(extensionResponseDTO, responseContextDTO);
-                break;
-            default:
-                String error = String.format("Unsupported HTTP method: %s",
-                        StringUtil.sanitizeString(httpMethod.name())
-                );
-                // log.error(StringUtil.sanitizeString(error));
-                throw new OpenBankingAPIHandlerException("Unsupported HTTP method: " + httpMethod.name());
-        }
-
-        return extensionResponseDTO;
-    }
-
-    private void processResponseForHttpMethodPost(
-            ExtensionResponseDTO extensionResponseDTO,
-            ResponseContextDTO responseContextDTO
-    ) throws OpenBankingAPIHandlerException {
-        // Get the client_id from the response payload
-        // It will be used as the name of the application in the APIM
-        String responsePayload = getPayload(responseContextDTO.getMsgInfo());
-
-        if (responsePayload == null) {
-            log.error("Response payload is null");
-            throw new OpenBankingAPIHandlerException("Response payload is null");
-        }
-
-        // Convert the JSON string to a map
-        JSONObject jsonObject = null;
-        try {
-            jsonObject = (JSONObject) (new JSONParser()).parse(responsePayload);
-        } catch (ParseException e) {
-            log.error("Error occurred while parsing the JSON string to a JSON object", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while parsing the JSON string to a JSON object", e
-            );
-        }
-
-        String clientId = (String) jsonObject.get("client_id");
-        String clientSecret = (String) jsonObject.get("client_secret");
-
-        if (clientId == null) {
-            log.error("client_id not found in the response payload");
-            throw new OpenBankingAPIHandlerException("client_id not found in the response payload");
-        }
-
-        if (clientSecret == null) {
-            log.error("client_secret not found in the response payload");
-            throw new OpenBankingAPIHandlerException("client_secret not found in the response payload");
-        }
-
-        // Create an application in the APIM with the client_id as the name
-
-        DevPortalApplication devPortalApplication = null;
-        try {
-            devPortalApplication = devPortalRestApiManager.createApplication(
-                    new DevPortalApplication(
-                            null,
-                            clientId,
-                            "Unlimited",
-                            "Application created by the DCR API",
-                            "JWT",
-                            null,
-                            null,
-                            null
-                    )
-            );
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while creating the application in the APIM", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while creating the application in the APIM", e
-            );
-        }
-
-        // Map the application keys to the application
-        try {
-            devPortalRestApiManager.mapApplicationKeys(
-                    devPortalApplication.getApplicationId(),
-                    clientId,
-                    clientSecret,
-                    GatewayConstants.KEY_MANAGER_NAME,
-                    false
-            );
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-
-            try {
-                // If an error occurred while mapping the application keys, delete the application
-                devPortalRestApiManager.deleteApplication(devPortalApplication.getApplicationId());
-            } catch (DevPortalRestApiManagerRuntimeException e1) {
-                log.error("Error occurred while deleting the application in the APIM", e1);
-                throw new OpenBankingAPIHandlerException(
-                        "Error occurred while deleting the application in the APIM", e1
-                );
-            }
-
-            log.error("Error occurred while mapping the application keys", e);
-            throw new OpenBankingAPIHandlerException("Error occurred while mapping the application keys", e);
-        }
-
-        // Gat all the regulatory API IDs
-        List<String> apiIds = devPortalRestApiManager.searchAPIsByTag(GatewayConstants.AM_TAG_REGULATORY);
-
-        if (apiIds == null || apiIds.isEmpty()) {
-            log.error("No regulatory APIs found in the APIM");
-            throw new OpenBankingAPIHandlerException("No regulatory APIs found in the APIM");
-        }
-
-        // Subscribe to all the regulatory APIs
-        List<String> subscriptionIds = null;
-
-        try {
-            subscriptionIds = devPortalRestApiManager.subscribeToAPIs(
-                    devPortalApplication.getApplicationId(),
-                    apiIds.toArray(new String[0])
-            );
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while subscribing to the regulatory APIs", e);
-            throw new OpenBankingAPIHandlerException("Error occurred while subscribing to the regulatory APIs", e);
-        }
-    }
-
-    private void processResponseForHttpMethodPut(
-            ExtensionResponseDTO extensionResponseDTO,
-            ResponseContextDTO responseContextDTO
-    ) throws OpenBankingAPIHandlerException {
-        // Get the client_id from the response payload
-        // It will be used as the name of the application in the APIM
-        String responsePayload = getPayload(responseContextDTO.getMsgInfo());
-
-        if (responsePayload == null) {
-            log.error("Response payload is null");
-            throw new OpenBankingAPIHandlerException("Response payload is null");
-        }
-
-        // Convert the JSON string to a map
-        JSONObject jsonObject = null;
-        try {
-            jsonObject = (JSONObject) (new JSONParser()).parse(responsePayload);
-        } catch (ParseException e) {
-            log.error("Error occurred while parsing the JSON string to a JSON object", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while parsing the JSON string to a JSON object", e
-            );
-        }
-
-        String clientId = (String) jsonObject.get("client_id");
-        String clientSecret = (String) jsonObject.get("client_secret");
-
-        if (clientId == null) {
-            log.error("client_id not found in the response payload");
-            throw new OpenBankingAPIHandlerException("client_id not found in the response payload");
-        }
-
-        if (clientSecret == null) {
-            log.error("client_secret not found in the response payload");
-            throw new OpenBankingAPIHandlerException("client_secret not found in the response payload");
-        }
-
-        // Get the application that have been created in the APIM
-        DevPortalApplication devPortalApplication = null;
-
-        try {
-            devPortalApplication = devPortalRestApiManager.searchApplicationsByName(clientId).get(0);
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while searching the application in the APIM", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while searching the application in the APIM", e
-            );
-        }
-
-        // Map the application keys to the application
-        String keyMappingId = null;
-
-        try {
-            keyMappingId = devPortalRestApiManager.mapApplicationKeys(
-                    devPortalApplication.getApplicationId(),
-                    clientId,
-                    clientSecret,
-                    GatewayConstants.KEY_MANAGER_NAME,
-                    false
-            );
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while mapping the application keys", e);
-            throw new OpenBankingAPIHandlerException("Error occurred while mapping the application keys", e);
-        }
-
-//        if (keyMappingId == null) {
-//            log.error("Key mapping ID is null");
-//            throw new OpenBankingAPIHandlerException("Key mapping ID is null");
-//        }
-    }
-
-    private void processResponseForHttpMethodDelete(
-            ExtensionResponseDTO extensionResponseDTO,
-            ResponseContextDTO responseContextDTO
-    ) throws OpenBankingAPIHandlerException {
-        String clientId = HttpUtil.extractPathVariableSentAsLastSegment(
-                responseContextDTO
-                        .getMsgInfo()
-                        .getResource()
-        );
-
-        // Get the application that have been created in the APIM
-        DevPortalApplication devPortalApplication = null;
-
-        try {
-            devPortalApplication = devPortalRestApiManager.searchApplicationsByName(clientId).get(0);
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while searching the application in the APIM", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while searching the application in the APIM", e
-            );
-        }
-
-        List<String> subscriptionIds = null;
-
-        try {
-            subscriptionIds = devPortalRestApiManager
-                    .getSubscriptionsByApplicationId(devPortalApplication.getApplicationId());
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while getting the subscriptions of the application in the APIM", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while getting the subscriptions of the application in the APIM", e
-            );
-        }
-
-        // Unsubscribe from all the APIs
-        for (String subscriptionId : subscriptionIds) {
-            try {
-                devPortalRestApiManager.unsubscribeToAPI(subscriptionId);
-            } catch (DevPortalRestApiManagerRuntimeException e) {
-                log.error("Error occurred while unsubscribing from the API in the APIM", e);
-                throw new OpenBankingAPIHandlerException(
-                        "Error occurred while unsubscribing from the API in the APIM", e
-                );
-            }
-        }
-
-        // Delete the application
-        try {
-            devPortalRestApiManager.deleteApplication(devPortalApplication.getApplicationId());
-        } catch (DevPortalRestApiManagerRuntimeException e) {
-            log.error("Error occurred while deleting the application in the APIM", e);
-            throw new OpenBankingAPIHandlerException(
-                    "Error occurred while deleting the application in the APIM", e
-            );
-        }
-    }
-
 }
