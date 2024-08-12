@@ -318,6 +318,8 @@ public class DCRHandler implements OpenBankingAPIHandler {
             headers.replace(HttpHeader.CONTENT_TYPE, HttpHeaderContentType.APPLICATION_JSON);
         }
 
+        headers.put(HttpHeader.ACCEPT, HttpHeaderContentType.APPLICATION_JSON);
+
 //        // Generate the Basic Auth header
 //        String basicAuthHeader = HttpUtil.generateBasicAuthHeader(isUsername, isPassword);
 //
