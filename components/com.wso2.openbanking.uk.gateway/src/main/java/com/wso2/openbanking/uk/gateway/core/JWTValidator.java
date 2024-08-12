@@ -179,8 +179,8 @@ public class JWTValidator {
      */
     public Map<String, Object> getClaims() {
         if (!validateJwt()) {
-            log.error("Invalid JWT format");
-            throw new JWTValidatorRuntimeException("Invalid JWT format");
+            log.error("Invalid JWT");
+            throw new JWTValidatorRuntimeException("Invalid JWT");
         }
 
         SignedJWT signedJWT = null;

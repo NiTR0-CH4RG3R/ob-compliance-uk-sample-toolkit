@@ -3,6 +3,7 @@ package com.wso2.openbanking.uk.gateway.core;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -160,6 +161,20 @@ public class JWTValidatorTest {
         };
 
         httpServer.createContext("/jwks", handler);
+
+        HttpHandler handlerWrongJWKS = new HttpHandler() {
+            public void handle(HttpExchange exchange) throws IOException {
+                byte[] response = "{}".getBytes();
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK,
+                        response.length);
+                exchange.getResponseBody().write(response);
+                exchange.close();
+            }
+        };
+
+
+        httpServer.createContext("/njwks", handlerWrongJWKS);
+
         httpServer.start();
     }
 
@@ -169,9 +184,13 @@ public class JWTValidatorTest {
     }
 
     @Test
-    public void testValidateSignatureUsingJWKS() {
-        String jwt =
-                "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IjdlSjhTX1pndmxZeEZBRlNnaFY5eE1KUk92ayJ9.eyJpc3MiOiJqRlF1UTRlUWJOQ01TcWRDb2cyMW5GIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGJhbmsuY29tIiwic2NvcGUiOiJhY2NvdW50cyBwYXltZW50cyIsInRva2VuX2VuZHBvaW50X2F1dGhfbWV0aG9kIjoicHJpdmF0ZV9rZXlfand0IiwidG9rZW5fZW5kcG9pbnRfYXV0aF9zaWduaW5nX2FsZyI6IlBTMjU2IiwiZ3JhbnRfdHlwZXMiOlsiYXV0aG9yaXphdGlvbl9jb2RlIiwiY2xpZW50X2NyZWRlbnRpYWxzIiwicmVmcmVzaF90b2tlbiJdLCJyZXNwb25zZV90eXBlcyI6WyJjb2RlIGlkX3Rva2VuIl0sImlkX3Rva2VuX3NpZ25lZF9yZXNwb25zZV9hbGciOiJQUzI1NiIsInJlcXVlc3Rfb2JqZWN0X3NpZ25pbmdfYWxnIjoiUFMyNTYiLCJhcHBsaWNhdGlvbl90eXBlIjoid2ViIiwic29mdHdhcmVfaWQiOiJqRlF1UTRlUWJOQ01TcWRDb2cyMW5GIiwicmVkaXJlY3RfdXJpcyI6WyJodHRwczovL3d3dy5nb29nbGUuY29tL3JlZGlyZWN0cy9yZWRpcmVjdDEiXSwianRpIjoiNGoxYnZxY2tmbDlyIiwiaWF0IjoxNzIzMTAwNjEzLCJleHAiOjIwMzg0NjA2MTMsInNvZnR3YXJlX3N0YXRlbWVudCI6ImV5SmhiR2NpT2lKUVV6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SWpkbFNqaFRYMXBuZG14WmVFWkJSbE5uYUZZNWVFMUtVazkyYXlKOS5leUpwYzNNaU9pSlBjR1Z1UW1GdWEybHVaeUJNZEdRaUxDSnpiMlowZDJGeVpWOWxiblpwY205dWJXVnVkQ0k2SW5OaGJtUmliM2dpTENKemIyWjBkMkZ5WlY5dGIyUmxJam9pVkdWemRDSXNJbk52Wm5SM1lYSmxYMmxrSWpvaWFrWlJkVkUwWlZGaVRrTk5VM0ZrUTI5bk1qRnVSaUlzSW5OdlpuUjNZWEpsWDJOc2FXVnVkRjlwWkNJNkltcEdVWFZSTkdWUllrNURUVk54WkVOdlp6SXhia1lpTENKemIyWjBkMkZ5WlY5amJHbGxiblJmYm1GdFpTSTZJbGRUVHpJZ1QzQmxiaUJDWVc1cmFXNW5JRlJRVURJZ0tGTmhibVJpYjNncElpd2ljMjltZEhkaGNtVmZZMnhwWlc1MFgyUmxjMk55YVhCMGFXOXVJam9pVkdocGN5QmhiSFJsY201aGRHbDJaU0JVVUZBZ2FYTWdZM0psWVhSbFpDQm1iM0lnZEdWemRHbHVaeUJ3ZFhKd2IzTmxjeTRnSWl3aWMyOW1kSGRoY21WZmRtVnljMmx2YmlJNk1TNDFMQ0p6YjJaMGQyRnlaVjlqYkdsbGJuUmZkWEpwSWpvaWFIUjBjSE02THk5M2MyOHlMbU52YlNJc0lteHZaMjlmZFhKcElqb2lhSFIwY0hNNkx5OTNkM2N1ZDNOdk1pNWpiMjB2ZDNOdk1pNXFjR2NpTENKemIyWjBkMkZ5WlY5eVpXUnBjbVZqZEY5MWNtbHpJanBiSW1oMGRIQnpPaTh2ZDNkM0xtZHZiMmRzWlM1amIyMHZjbVZrYVhKbFkzUnpMM0psWkdseVpXTjBNU0pkTENKemIyWjBkMkZ5WlY5eWIyeGxjeUk2V3lKQlNWTlFJaXdpVUVsVFVDSXNJa05DVUVsSklsMHNJbTl5WjJGdWFYTmhkR2x2Ymw5amIyMXdaWFJsYm5SZllYVjBhRzl5YVhSNVgyTnNZV2x0Y3lJNmV5SmhkWFJvYjNKcGRIbGZhV1FpT2lKUFFrZENVaUlzSW5KbFoybHpkSEpoZEdsdmJsOXBaQ0k2SWxWdWEyNXZkMjR3TURFMU9EQXdNREF4U0ZGUmNscEJRVmdpTENKemRHRjBkWE1pT2lKQlkzUnBkbVVpTENKaGRYUm9iM0pwYzJGMGFXOXVjeUk2VzNzaWJXVnRZbVZ5WDNOMFlYUmxJam9pUjBJaUxDSnliMnhsY3lJNld5SlFTVk5RSWl3aVFVbFRVQ0lzSWtOQ1VFbEpJbDE5TEhzaWJXVnRZbVZ5WDNOMFlYUmxJam9pU1VVaUxDSnliMnhsY3lJNld5SlFTVk5RSWl3aVEwSlFTVWtpTENKQlNWTlFJbDE5TEhzaWJXVnRZbVZ5WDNOMFlYUmxJam9pVGt3aUxDSnliMnhsY3lJNld5SlFTVk5RSWl3aVFVbFRVQ0lzSWtOQ1VFbEpJbDE5WFgwc0luTnZablIzWVhKbFgyeHZaMjlmZFhKcElqb2lhSFIwY0hNNkx5OTNjMjh5TG1OdmJTOTNjMjh5TG1wd1p5SXNJbTl5WjE5emRHRjBkWE1pT2lKQlkzUnBkbVVpTENKdmNtZGZhV1FpT2lJd01ERTFPREF3TURBeFNGRlJjbHBCUVZnaUxDSnZjbWRmYm1GdFpTSTZJbGRUVHpJZ0tGVkxLU0JNU1UxSlZFVkVJaXdpYjNKblgyTnZiblJoWTNSeklqcGJleUp1WVcxbElqb2lWR1ZqYUc1cFkyRnNJaXdpWlcxaGFXd2lPaUp6WVdOb2FXNXBjMEIzYzI4eUxtTnZiU0lzSW5Cb2IyNWxJam9pS3prME56YzBNamMwTXpjMElpd2lkSGx3WlNJNklsUmxZMmh1YVdOaGJDSjlMSHNpYm1GdFpTSTZJa0oxYzJsdVpYTnpJaXdpWlcxaGFXd2lPaUp6WVdOb2FXNXBjMEIzYzI4eUxtTnZiU0lzSW5Cb2IyNWxJam9pS3prME56YzBNamMwTXpjMElpd2lkSGx3WlNJNklrSjFjMmx1WlhOekluMWRMQ0p2Y21kZmFuZHJjMTlsYm1Sd2IybHVkQ0k2SW1oMGRIQTZMeTlzYjJOaGJHaHZjM1E2T0RBd01DOXFkMnR6SWl3aWIzSm5YMnAzYTNOZmNtVjJiMnRsWkY5bGJtUndiMmx1ZENJNkltaDBkSEE2THk5c2IyTmhiR2h2YzNRNk9EQXdNQzlxZDJ0eklpd2ljMjltZEhkaGNtVmZhbmRyYzE5bGJtUndiMmx1ZENJNkltaDBkSEE2THk5c2IyTmhiR2h2YzNRNk9EQXdNQzlxZDJ0eklpd2ljMjltZEhkaGNtVmZhbmRyYzE5eVpYWnZhMlZrWDJWdVpIQnZhVzUwSWpvaWFIUjBjRG92TDJ4dlkyRnNhRzl6ZERvNE1EQXdMMnAzYTNNaUxDSnpiMlowZDJGeVpWOXdiMnhwWTNsZmRYSnBJam9pYUhSMGNITTZMeTkzYzI4eUxtTnZiU0lzSW5OdlpuUjNZWEpsWDNSdmMxOTFjbWtpT2lKb2RIUndjem92TDNkemJ6SXVZMjl0SWl3aWMyOW1kSGRoY21WZmIyNWZZbVZvWVd4bVgyOW1YMjl5WnlJNklsZFRUeklnVDNCbGJpQkNZVzVyYVc1bklpd2lhblJwSWpvaVpYUm1PR0ZoY25nM2VHeHhJaXdpYVdGMElqb3hOekl6TVRBd05qRXpMQ0psZUhBaU9qSXdNemcwTmpBMk1UTjkuYUgweDhrYU1fZGtETDZVUUhQa1U3ckh0SHdJQ2lrU2tsQlJDNEhKa1hRcExMa3lxUEZlQWo1SFBTUFNLdmZnUEJXdHlPMHFmbVJTUVZwbWR2c2ZNemh0MjRoOFZTc1JuaHllRVVuT2xHMVl0R0J0emw3LUtEVkxpTkVZbVg2dmtYbGhaYTRtcHIzTW0ySW5VQnpndXl0enlydHRFQWotdkVFSmdGSF9IYUtVbWhXay1TbE03MTNSNkQ3VWRNTk9YeUI1ajZYdFNReHlqZFNiQTdOTlozaWNzYzZFVEJBSTB0Y3c2MVhzSTV2ZGd2S0dKMVFrTi1LMzFrOElQanhsVmNmSUhxSFRmSF9FLWlULVJmb1E4Q3ItZlNVNXVHV3VmUzNqSTF1SF9QSnFLckdaM2NhVWFidGpJNlIzaUhDT3ViWFVna0NiM1JrX1MtdzdpZjYxUVRBIn0.KlozkbL1tNFJsvPxOgtWjpalPAAZThu4Vswtamoi8PSLT3ufMwm-NTYir7_HXl3gu_Lnl8dp1dOofRv1zfXXLfXi8ZWUb6K38h79rPIZEdYoAD31Y-0BhxjdQZgi0Y8HLmjSHZb4NsXeQIEIWPTk2rRIOklfCVPjbasFga0RafxhExGCN6N0BVhl1wnxTNN4o5sby0poNw4c3E_90dEjNgTiAe-RrPUzMRgzxnFv-fjyBmZvw83G5jjgYfQZrEEbeHEIrnGdDfjgV1y6rwmO0GqvUsMYJ-I51-4kEUiE_69Dveinv_GrZOOkuVHmSluxxFDjx2EKCU_MzE2A-biYPw";
+    public void testValidateSignatureUsingJWKSWithValidJWT() {
+        String jwt = "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRta" +
+                "W4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.jKT31t8RseZLeSDtN-4t5_IG33J-SzoRChoQq8OwdRspElX0_sM4b6labjjsL8Ht" +
+                "hNRq8EEx0l3USd6mgTB0bFNCafGEGEnbgOVuK74n8gdCJCpI20_5osXNWxifdbSWTCFNiY0THNzm5C8Po2BSN5s2PN3eHqXmK72" +
+                "kJnWOStVHTWwGbagbPsR3_NKe6DmlTN0VA-TeH0VL9sY7-4rApzPtTv7YtMJIAUebG9zha47piNY2W1bQkTE98FVevy-0r1oeC3" +
+                "PqesjwlIfSbCBFutsfjUVsOe7nAWJIKIHaxfFNU2IXWbvniSfrnot_I1CELQ29GC9bNnRinPKxHnPvNQ";
+
         JWTValidator jwtValidator = new JWTValidator(jwt);
 
         String jwkSetURL = "http://localhost:8000/jwks";
@@ -184,6 +203,71 @@ public class JWTValidatorTest {
         }
 
         Assert.assertTrue(result);
+    }
+
+    @Test
+    public void testValidateSignatureUsingJWKSWithInvalidJWT() {
+        String jwt = "This is not a valid JWT";
+
+        JWTValidator jwtValidator = new JWTValidator(jwt);
+
+        String jwkSetURL = "http://localhost:8000/jwks";
+
+        boolean result = false;
+        try {
+            result = jwtValidator.validateSignatureUsingJWKS(jwkSetURL);
+            Assert.fail("Error occurred while validating the signature using JWKS");
+        } catch (JWTValidatorRuntimeException e) {
+            Assert.assertEquals(e.getMessage(), "Invalid JWT format");
+        }
+
+        Assert.assertFalse(result);
+    }
+
+    @Test
+    public void testValidateSignatureUsingJWKSWithInvalidURL() {
+        String jwt = "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRta" +
+                "W4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.jKT31t8RseZLeSDtN-4t5_IG33J-SzoRChoQq8OwdRspElX0_sM4b6labjjsL8Ht" +
+                "hNRq8EEx0l3USd6mgTB0bFNCafGEGEnbgOVuK74n8gdCJCpI20_5osXNWxifdbSWTCFNiY0THNzm5C8Po2BSN5s2PN3eHqXmK72" +
+                "kJnWOStVHTWwGbagbPsR3_NKe6DmlTN0VA-TeH0VL9sY7-4rApzPtTv7YtMJIAUebG9zha47piNY2W1bQkTE98FVevy-0r1oeC3" +
+                "PqesjwlIfSbCBFutsfjUVsOe7nAWJIKIHaxfFNU2IXWbvniSfrnot_I1CELQ29GC9bNnRinPKxHnPvNQ";
+
+
+        JWTValidator jwtValidator = new JWTValidator(jwt);
+
+        String jwkSetURL = "ll/jwks";
+
+        boolean result = false;
+        try {
+            result = jwtValidator.validateSignatureUsingJWKS(jwkSetURL);
+            Assert.fail("Error occurred while validating the signature using JWKS");
+        } catch (JWTValidatorRuntimeException e) {
+            Assert.assertEquals(e.getMessage(), "Invalid JWKS endpoint");
+        }
+
+        Assert.assertFalse(result);
+    }
+
+    @Test
+    public void testValidateSignatureUsingJWKSWithValidURL() {
+        String jwt = "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRta" +
+                "W4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.jKT31t8RseZLeSDtN-4t5_IG33J-SzoRChoQq8OwdRspElX0_sM4b6labjjsL8Ht" +
+                "hNRq8EEx0l3USd6mgTB0bFNCafGEGEnbgOVuK74n8gdCJCpI20_5osXNWxifdbSWTCFNiY0THNzm5C8Po2BSN5s2PN3eHqXmK72" +
+                "kJnWOStVHTWwGbagbPsR3_NKe6DmlTN0VA-TeH0VL9sY7-4rApzPtTv7YtMJIAUebG9zha47piNY2W1bQkTE98FVevy-0r1oeC3" +
+                "PqesjwlIfSbCBFutsfjUVsOe7nAWJIKIHaxfFNU2IXWbvniSfrnot_I1CELQ29GC9bNnRinPKxHnPvNQ";
+
+        JWTValidator jwtValidator = new JWTValidator(jwt);
+
+        String jwkSetURL = "http://localhost:8000/njwks";
+
+        boolean result = false;
+        try {
+            result = jwtValidator.validateSignatureUsingJWKS(jwkSetURL);
+        } catch (JWTValidatorRuntimeException e) {
+            Assert.fail("Error occurred while validating the signature using JWKS");
+        }
+
+        Assert.assertFalse(result);
     }
 
     @Test
@@ -208,6 +292,17 @@ public class JWTValidatorTest {
     }
 
     @Test
+    public void testGetJWT() {
+        String validJWT =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0Ijo" +
+                        "xNTE2MjM5MDIyfQ.-BJ02694Yp2IKXNSwomxVfMk8tVWtYm6PthMw8LIqOo";
+
+        JWTValidator jwtValidator = new JWTValidator(validJWT);
+
+        Assert.assertEquals(jwtValidator.getJwt(), validJWT);
+    }
+
+    @Test
     public void testGetClaim() {
         String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF" +
                 "0IjoxNTE2MjM5MDIyfQ.-BJ02694Yp2IKXNSwomxVfMk8tVWtYm6PthMw8LIqOo";
@@ -224,6 +319,39 @@ public class JWTValidatorTest {
     }
 
     @Test
+    public void testGetClaimWrongType() {
+        String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF" +
+                "0IjoxNTE2MjM5MDIyfQ.-BJ02694Yp2IKXNSwomxVfMk8tVWtYm6PthMw8LIqOo";
+
+        JWTValidator jwtValidator = new JWTValidator(jwt);
+
+        try {
+            int sub = jwtValidator.getClaim("sub", int.class);
+            Assert.fail("Error occurred while getting the claim");
+        } catch (JWTValidatorRuntimeException e) {
+            Assert.assertEquals(e.getMessage(),
+                        String.format("Invalid claim type! Expected %s, but found %s",
+                                int.class.getName(), String.class.getName()
+                                )
+                    );
+        }
+    }
+
+    @Test
+    public void testGetClaimNonExistingKey() {
+        String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF" +
+                "0IjoxNTE2MjM5MDIyfQ.-BJ02694Yp2IKXNSwomxVfMk8tVWtYm6PthMw8LIqOo";
+
+        JWTValidator jwtValidator = new JWTValidator(jwt);
+
+
+        String lol = jwtValidator.getClaim("lol", String.class);
+
+        Assert.assertNull(lol);
+
+    }
+
+    @Test
     public void testGetClaims() {
         String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0" +
                 "IjoxNTE2MjM5MDIyfQ.-BJ02694Yp2IKXNSwomxVfMk8tVWtYm6PthMw8LIqOo";
@@ -236,6 +364,21 @@ public class JWTValidatorTest {
         Assert.assertEquals(claims.get("sub"), "1234567890");
         Assert.assertEquals(claims.get("name"), "John Doe");
         Assert.assertEquals(claims.get("iat"), (Long) 1516239022L);
+    }
+
+    @Test
+    public void testGetClaimsWithInvalidJWT() {
+        String jwt = "Not a valid JWT";
+
+        JWTValidator jwtValidator = new JWTValidator(jwt);
+
+        try {
+            Map<String, Object> claims = jwtValidator.getClaims();
+            Assert.fail("Error occurred while getting the claims");
+        } catch (JWTValidatorRuntimeException e) {
+            Assert.assertEquals(e.getMessage(), "Invalid JWT");
+        }
+
     }
 
     @Test
