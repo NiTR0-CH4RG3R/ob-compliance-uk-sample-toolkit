@@ -31,9 +31,6 @@ import java.util.Map;
 public class DCRHandler implements OpenBankingAPIHandler {
     private static final Log log = LogFactory.getLog(DCRHandler.class);
 
-    private String isUsername = GatewayConstants.DEFAULT_IS_USERNAME;
-    private String isPassword = GatewayConstants.DEFAULT_IS_PASSWORD;
-
     public DCRHandler() {
     }
 
@@ -312,7 +309,7 @@ public class DCRHandler implements OpenBankingAPIHandler {
 
         // If the response status code is not in the 2xx range, then something went wrong from the IS side.
         if (responseContextDTOStatusCode < 200 || responseContextDTOStatusCode >= 300) {
-            log.error("Error occurred while processing the request: " + responseContextDTO.getStatusCode());
+            log.error("Error occurred while processing the request");
             return OpenBankingAPIHandlerUtil.createExtensionResponseDTO(
                     responseContextDTO.getStatusCode(),
                     "Error occurred while processing the request",
