@@ -78,6 +78,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${org.apache.httpcomponents.httpclient.version}</version> <!-- or any other compatible version -->
+            </dependency>
+
+            <dependency>
                 <groupId>org.wso2.carbon.apimgt</groupId>
                 <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
                 <version>${org.wso2.carbon.apimgt.version}</version>
@@ -168,11 +174,71 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven.surefire.plugin.version}</version>
+                    <configuration>
+                        <includes>
+                            <include>**/*Test.java</include>
+                        </includes>
+                        <suiteXmlFiles>
+                            <suiteXmlFile>src/test/resources/testSuite.xml</suiteXmlFile>
+                        </suiteXmlFiles>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
+                    <configuration>
+                        <excludes>
+                            <!--Excluding them in coverage reports-->
+                            <exclude>**/*Constants.class</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>default-prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-prepare-agent-integration</id>
+                            <goals>
+                                <goal>prepare-agent-integration</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-report</id>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-report-integration</id>
+                            <goals>
+                                <goal>report-integration</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>default-check</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <rule implementation="org.jacoco.maven.RuleConfiguration">
+                                        <element>BUNDLE</element>
+                                        <limits>
+                                            <limit implementation="org.jacoco.report.check.Limit">
+                                                <counter>INSTRUCTION</counter>
+                                                <value>COVEREDRATIO</value>
+                                                <minimum>0.8</minimum>
+                                            </limit>
+                                        </limits>
+                                    </rule>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
 
             </plugins>
@@ -190,21 +256,24 @@
     </build>
 
     <properties>
-        <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+        <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
+
         <org.testing.version>7.7.0</org.testing.version>
-        <mockito-core.version>4.8.0</mockito-core.version>
+        <mockito-core.version>5.7.0</mockito-core.version>
+        <org.apache.httpcomponents.httpclient.version>4.5.13</org.apache.httpcomponents.httpclient.version>
+
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
 
         <maven.spotbugsplugin.version>4.2.3</maven.spotbugsplugin.version>
         <com.h3xstream.findsecbugs.version>1.12.0</com.h3xstream.findsecbugs.version>
 
-        <jacoco.version>0.8.10</jacoco.version>
+        <jacoco.version>0.8.8</jacoco.version>
 
-        <maven.checkstyle.plugin.version>3.4.0</maven.checkstyle.plugin.version>
+        <maven.checkstyle.plugin.version>3.3.0</maven.checkstyle.plugin.version>
 
         <org.wso2.carbon.apimgt.version>9.29.120</org.wso2.carbon.apimgt.version>
 
