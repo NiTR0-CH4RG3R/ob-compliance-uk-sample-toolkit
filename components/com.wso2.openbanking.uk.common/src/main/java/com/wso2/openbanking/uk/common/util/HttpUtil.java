@@ -97,4 +97,30 @@ public class HttpUtil {
         // Return the last segment
         return segments[segments.length - 1];
     }
+
+    /**
+     * Extracts the bearer token from the given authorization header.
+     *
+     * @param authorizationHeader The authorization header from which the bearer token should be extracted.
+     * @return The bearer token extracted from the authorization header.
+     */
+    public static String extractBearerToken(String authorizationHeader) {
+        if (authorizationHeader == null) {
+            return null;
+        }
+
+        String[] parts = authorizationHeader.trim().split("\\s+");;
+        if (parts.length != 2) {
+            return null;
+        }
+
+        String scheme = parts[0];
+        String token = parts[1];
+
+        if (!"Bearer".equals(scheme)) {
+            return null;
+        }
+
+        return token;
+    }
 }
