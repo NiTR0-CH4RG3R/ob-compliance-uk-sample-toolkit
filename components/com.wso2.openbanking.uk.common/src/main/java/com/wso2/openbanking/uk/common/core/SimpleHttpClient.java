@@ -1,6 +1,6 @@
 package com.wso2.openbanking.uk.common.core;
 
-import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
+import com.wso2.openbanking.uk.common.exception.SimpleHttpClientRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import org.apache.commons.logging.Log;
@@ -34,10 +34,10 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
      *
      * @param request The SimpleHttpRequest to send.
      * @return The SimpleHttpResponse.
-     * @throws GatewayHttpClientRuntimeException If an error occurs while sending the request.
+     * @throws SimpleHttpClientRuntimeException If an error occurs while sending the request.
      */
     @Override
-    public SimpleHttpResponse send(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
+    public SimpleHttpResponse send(SimpleHttpRequest request) throws SimpleHttpClientRuntimeException {
         HttpRequestBase httpRequest = createHttpRequest(request);
 
         // Set headers
@@ -51,11 +51,11 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
             String responseBody = entity != null ? EntityUtils.toString(entity) : "";
             return new SimpleHttpResponse(response.getStatusLine().getStatusCode(), responseBody);
         } catch (IOException e) {
-            throw new GatewayHttpClientRuntimeException("Error sending request", e);
+            throw new SimpleHttpClientRuntimeException("Error sending request", e);
         }
     }
 
-    private HttpRequestBase createHttpRequest(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
+    private HttpRequestBase createHttpRequest(SimpleHttpRequest request) throws SimpleHttpClientRuntimeException {
         try {
             URI uri = new URIBuilder(request.getUrl()).build();
             switch (request.getMethod()) {
@@ -76,10 +76,10 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
                 case DELETE:
                     return new HttpDelete(uri);
                 default:
-                    throw new GatewayHttpClientRuntimeException("Unsupported HTTP method: " + request.getMethod());
+                    throw new SimpleHttpClientRuntimeException("Unsupported HTTP method: " + request.getMethod());
             }
         } catch (URISyntaxException e) {
-            throw new GatewayHttpClientRuntimeException("Invalid URL syntax: " + request.getUrl(), e);
+            throw new SimpleHttpClientRuntimeException("Invalid URL syntax: " + request.getUrl(), e);
         }
     }
 }
