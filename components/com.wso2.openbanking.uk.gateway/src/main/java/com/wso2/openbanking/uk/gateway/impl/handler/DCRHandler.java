@@ -6,7 +6,6 @@ import com.wso2.openbanking.uk.common.constants.HttpMethod;
 import com.wso2.openbanking.uk.common.util.HttpUtil;
 import com.wso2.openbanking.uk.gateway.constants.GatewayConstants;
 import com.wso2.openbanking.uk.gateway.core.JWTValidator;
-import com.wso2.openbanking.uk.gateway.core.OBClientRegistrationResponse1;
 import com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandler;
 import com.wso2.openbanking.uk.gateway.exception.JWTValidatorRuntimeException;
 import com.wso2.openbanking.uk.gateway.util.OpenBankingAPIHandlerUtil;
@@ -20,8 +19,6 @@ import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 
@@ -229,11 +226,50 @@ public class DCRHandler implements OpenBankingAPIHandler {
                             .getResource()
             );
 
-            // Extract the clientId from the request token
-            String clientIdBoundToToken = requestContextDTO.getApiRequestInfo().getConsumerKey();
+            // Extract the client ID bound to the access token
+
+            // Extract the access token
+            String accessToken = HttpUtil.extractBearerToken(
+                    requestContextDTO
+                            .getMsgInfo()
+                            .getHeaders()
+                            .get(HttpHeader.AUTHORIZATION)
+            );
+
+            // Validate the access token and extract the client ID from it.
+            JWTValidator accessTokenValidator = new JWTValidator(accessToken);
+            if(!accessTokenValidator.validateJwt()) {
+                log.error("Access token validation failed");
+                return OpenBankingAPIHandlerUtil.createExtensionResponseDTO(
+                        400,
+                        "Malformed request payload",
+                        null,
+                        null,
+                        ExtensionResponseStatus.RETURN_ERROR
+                );
+            }
+
+            String clientIdBoundToToken = null;
+            try {
+                clientIdBoundToToken = accessTokenValidator.getClaim("client_id", String.class);
+            } catch (JWTValidatorRuntimeException e) {
+                log.error("Error occurred while extracting the client_id from the access token", e);
+                return OpenBankingAPIHandlerUtil.createExtensionResponseDTO(
+                        400,
+                        "Malformed request payload",
+                        null,
+                        null,
+                        ExtensionResponseStatus.RETURN_ERROR
+                );
+            }
 
             if (!clientIdSentInRequest.equals(clientIdBoundToToken)) {
                 log.error("Client ID in the request path does not match the client ID in the request token");
+
+                if(!ServiceProviderUtil.revokeAccessToken(GatewayConstants.DEFAULT_IS_URL, accessToken)) {
+                    log.error("Error occurred while revoking the access token");
+                }
+
                 return OpenBankingAPIHandlerUtil.createExtensionResponseDTO(
                         400,
                         "Client ID in the request path does not match the client ID in the request token",
@@ -340,22 +376,10 @@ public class DCRHandler implements OpenBankingAPIHandler {
                         ExtensionResponseStatus.RETURN_ERROR
                 );
             }
-            OBClientRegistrationResponse1 obClientRegistrationResponse1 = new OBClientRegistrationResponse1(payload);
 
-            String modifiedPayload = null;
-            try {
-                modifiedPayload = obClientRegistrationResponse1.getOBClientRegistrationResponse1();
-            } catch (Exception e) {
-                log.error("Error occurred while mapping the response payload to the Open Banking compliant response",
-                        e);
-                return OpenBankingAPIHandlerUtil.createExtensionResponseDTO(
-                        500,
-                        "Internal server error",
-                        null,
-                        null,
-                        ExtensionResponseStatus.RETURN_ERROR
-                );
-            }
+            String modifiedPayload = ServiceProviderUtil.convertISDCRResponseJsonStringToOBClientRegistrationResponse1(
+                    payload
+            );
 
             if (modifiedPayload == null) {
                 log.error("Error occurred while mapping the response payload to the Open Banking compliant response");

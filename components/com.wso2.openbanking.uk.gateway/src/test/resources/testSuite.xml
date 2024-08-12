@@ -4,7 +4,6 @@
     <test name="core">
         <classes>
             <class name="com.wso2.openbanking.uk.gateway.core.JWTValidatorTest"/>
-            <class name="com.wso2.openbanking.uk.gateway.core.OBClientRegistrationResponse1Test"/>
             <class name="com.wso2.openbanking.uk.gateway.core.OpenBankingAPIHandlerTest"/>
         </classes>
     </test>

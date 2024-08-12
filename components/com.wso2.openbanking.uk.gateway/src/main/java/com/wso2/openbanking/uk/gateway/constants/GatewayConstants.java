@@ -6,6 +6,5 @@ package com.wso2.openbanking.uk.gateway.constants;
  * configurations for the actual values.
  */
 public class GatewayConstants {
-    public static final String DEFAULT_IS_USERNAME = "admin";
-    public static final String DEFAULT_IS_PASSWORD = "admin";
+    public static final String DEFAULT_IS_URL = "https://localhost:9443";
 }
