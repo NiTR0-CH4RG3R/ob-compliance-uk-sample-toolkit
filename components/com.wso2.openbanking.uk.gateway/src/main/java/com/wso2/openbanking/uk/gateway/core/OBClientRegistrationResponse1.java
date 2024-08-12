@@ -1,6 +1,6 @@
 package com.wso2.openbanking.uk.gateway.core;
 
-import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerRuntimeException;
+import com.wso2.openbanking.uk.common.exception.OpenBankingRuntimeException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -31,15 +31,15 @@ public class OBClientRegistrationResponse1 {
 
     /**
      * @return The UK spec complaint DCR response as a JSON string.
-     * @throws OpenBankingAPIHandlerRuntimeException If the provided response, or its software statement cause any
+     * @throws OpenBankingRuntimeException If the provided response, or its software statement cause any
      *                                               parsing exceptions.
      */
-    public String getOBClientRegistrationResponse1() throws OpenBankingAPIHandlerRuntimeException {
+    public String getOBClientRegistrationResponse1() throws OpenBankingRuntimeException {
         JSONObject responseJsonObject = null;
         try {
             responseJsonObject = (JSONObject) (new JSONParser()).parse(this.spServiceProviderResponse);
         } catch (ParseException e) {
-            throw new OpenBankingAPIHandlerRuntimeException("Error while parsing the response from the SP", e);
+            throw new OpenBankingRuntimeException("Error while parsing the response from the SP", e);
         }
 
         // Decode the software statement from the SP response
@@ -52,7 +52,7 @@ public class OBClientRegistrationResponse1 {
                     softwareStatementJwtValidator.getJSONString()
             );
         } catch (ParseException e) {
-            throw new OpenBankingAPIHandlerRuntimeException("Error while parsing the software statement", e);
+            throw new OpenBankingRuntimeException("Error while parsing the software statement", e);
         }
 
         // Create the OB Client Registration Response 1
