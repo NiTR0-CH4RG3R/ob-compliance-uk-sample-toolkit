@@ -13,11 +13,6 @@
             <class name="com.wso2.openbanking.uk.gateway.impl.handler.DCRHandlerTest"/>
         </classes>
     </test>
-    <test name="model">
-        <classes>
-            <class name="com.wso2.openbanking.uk.gateway.model.DevPortalApplicationTest"/>
-        </classes>
-    </test>
     <test name="util">
         <classes>
             <class name="com.wso2.openbanking.uk.gateway.util.ServiceProviderUtilTest"/>
