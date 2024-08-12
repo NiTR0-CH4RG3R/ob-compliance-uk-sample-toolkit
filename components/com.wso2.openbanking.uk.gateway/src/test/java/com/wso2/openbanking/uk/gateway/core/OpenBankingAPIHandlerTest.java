@@ -1,6 +1,5 @@
 package com.wso2.openbanking.uk.gateway.core;
 
-import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -10,91 +9,88 @@ import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.RequestContextDTO;
 import org.wso2.carbon.apimgt.common.gateway.dto.ResponseContextDTO;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class tests the OpenBankingAPIHandler.
  */
 public class OpenBankingAPIHandlerTest {
-
-    private final OpenBankingAPIHandler openBankingAPIHandler = new OpenBankingAPIHandler();
-
-    private static boolean isPreProcessRequest = false;
-    private static boolean isPostProcessRequest = false;
-    private static boolean isPreProcessResponse = false;
-    private static boolean isPostProcessResponse = false;
-
-    private static class OpenBankingAPIHandlerExtended extends OpenBankingAPIHandler {
-        @Override
-        public boolean canProcess(
-                MsgInfoDTO msgInfoDTO,
-                APIRequestInfoDTO apiRequestInfoDTO
-        ) {
-            return true;
-        }
-
-        @Override
-        public ExtensionResponseDTO preProcessRequest(
-                RequestContextDTO requestContextDTO
-        ) throws OpenBankingAPIHandlerException {
-            isPreProcessRequest = true;
-            return null;
-        }
-
-        @Override
-        public ExtensionResponseDTO postProcessRequest(
-                RequestContextDTO requestContextDTO
-        ) throws OpenBankingAPIHandlerException {
-            isPostProcessRequest = true;
-            return null;
-        }
-
-        @Override
-        public ExtensionResponseDTO preProcessResponse(
-                ResponseContextDTO responseContextDTO
-        ) throws OpenBankingAPIHandlerException {
-            isPreProcessResponse = true;
-            return null;
-        }
-
-        @Override
-        public ExtensionResponseDTO postProcessResponse(
-                ResponseContextDTO responseContextDTO
-        ) throws OpenBankingAPIHandlerException {
-            isPostProcessResponse = true;
-            return null;
-        }
-
-    }
-
-    @BeforeClass
-    public void setup() {
-        openBankingAPIHandler.setNextHandler(new OpenBankingAPIHandlerExtended());
-    }
-
     @Test
-    public void testHandlePreProcessRequest() {
-        RequestContextDTO requestContextDTO = new RequestContextDTO();
-        openBankingAPIHandler.handlePreProcessRequest(requestContextDTO);
-        Assert.assertTrue(isPreProcessRequest);
-    }
+    public void testHandlerOrder() {
+        String handler1Identifier = "handler1";
+        String handler2Identifier = "handler2";
 
-    @Test
-    public void testHandlePostProcessRequest() {
-        RequestContextDTO requestContextDTO = new RequestContextDTO();
-        openBankingAPIHandler.handlePostProcessRequest(requestContextDTO);
-        Assert.assertTrue(isPostProcessRequest);
-    }
+        List<String> handlerOrder = new ArrayList<String>();
 
-    @Test
-    public void testHandlePreProcessResponse() {
-        ResponseContextDTO responseContextDTO = new ResponseContextDTO();
-        openBankingAPIHandler.handlePreProcessResponse(responseContextDTO);
-        Assert.assertTrue(isPreProcessResponse);
-    }
+        OpenBankingAPIHandler handler1 = new OpenBankingAPIHandler() {
+            @Override
+            public boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
+                return true;
+            }
 
-    @Test
-    public void testHandlePostProcessResponse() {
-        ResponseContextDTO responseContextDTO = new ResponseContextDTO();
-        openBankingAPIHandler.handlePostProcessResponse(responseContextDTO);
-        Assert.assertTrue(isPostProcessResponse);
+            @Override
+            public ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO) {
+                handlerOrder.add(handler1Identifier);
+                return null;
+            }
+
+            @Override
+            public ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO) {
+                return null;
+            }
+
+            @Override
+            public ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) {
+                return null;
+            }
+
+            @Override
+            public ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO) {
+                return null;
+            }
+        };
+
+        OpenBankingAPIHandler handler2 = new OpenBankingAPIHandler() {
+            @Override
+            public boolean canProcess(MsgInfoDTO msgInfoDTO, APIRequestInfoDTO apiRequestInfoDTO) {
+                return true;
+            }
+
+            @Override
+            public ExtensionResponseDTO preProcessRequest(RequestContextDTO requestContextDTO) {
+                handlerOrder.add(handler2Identifier);
+                return null;
+            }
+
+            @Override
+            public ExtensionResponseDTO postProcessRequest(RequestContextDTO requestContextDTO) {
+                return null;
+            }
+
+            @Override
+            public ExtensionResponseDTO preProcessResponse(ResponseContextDTO responseContextDTO) {
+                return null;
+            }
+
+            @Override
+            public ExtensionResponseDTO postProcessResponse(ResponseContextDTO responseContextDTO) {
+                return null;
+            }
+        };
+
+        List<OpenBankingAPIHandler> handlerChain = new ArrayList<OpenBankingAPIHandler>();
+
+        handlerChain.add(handler1);
+        handlerChain.add(handler2);
+
+        for (OpenBankingAPIHandler handler : handlerChain) {
+            if (handler.canProcess(new MsgInfoDTO(), new APIRequestInfoDTO())) {
+                handler.preProcessRequest(new RequestContextDTO());
+            }
+        }
+
+        Assert.assertEquals(handlerOrder.get(0), handler1Identifier);
+        Assert.assertEquals(handlerOrder.get(1), handler2Identifier);
     }
 }
