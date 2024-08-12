@@ -3,7 +3,6 @@ package com.wso2.openbanking.uk.gateway.impl.handler;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.wso2.openbanking.uk.gateway.exception.OpenBankingAPIHandlerException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -201,7 +200,7 @@ public class DCRHandlerTest {
     }
 
     @Test
-    public void testPreProcessRequest() throws OpenBankingAPIHandlerException, IOException, ParseException {
+    public void testPreProcessRequest() throws IOException, ParseException {
         String expectedPayload = "{" +
                 "\"token_endpoint_auth_signing_alg\":\"PS256\"," +
                 "\"grant_types\":[\"authorization_code\",\"client_credentials\",\"refresh_token\"]," +
@@ -341,7 +340,7 @@ public class DCRHandlerTest {
     }
 
     @Test
-    public void testPostProcessRequest() throws OpenBankingAPIHandlerException, IOException, ParseException {
+    public void testPostProcessRequest() throws IOException, ParseException {
         String modifiedPayload = "{" +
                 "\"token_endpoint_auth_signing_alg\":\"PS256\"," +
                 "\"grant_types\":[\"authorization_code\",\"client_credentials\",\"refresh_token\"]," +
@@ -467,7 +466,7 @@ public class DCRHandlerTest {
     }
 
     @Test
-    public void testPreProcessResponse() throws OpenBankingAPIHandlerException, IOException, ParseException {
+    public void testPreProcessResponse() throws IOException, ParseException {
         String inputPayload = "{" +
                 "\"client_id\":\"vFMs7_Y_ih9t0exHL9nZUw7W5kwa\"," +
                 "\"client_secret\":\"zFGfMcMr8HF7EbxQlpVzszVu5RGpYrEfTpAKbfu4y4Qa\"," +
