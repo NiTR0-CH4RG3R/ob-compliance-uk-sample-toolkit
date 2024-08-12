@@ -2,7 +2,6 @@ package com.wso2.openbanking.uk.gateway.util;
 
 import com.wso2.openbanking.uk.common.constants.HttpMethod;
 import com.wso2.openbanking.uk.common.core.SimpleHttpClient;
-import com.wso2.openbanking.uk.common.exception.OpenBankingRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import com.wso2.openbanking.uk.common.util.HttpUtil;
@@ -37,7 +36,7 @@ public class ServiceProviderUtil {
         // Validate the access token and extract the client id from it.
         JWTValidator accessTokenValidator = new JWTValidator(accessToken);
 
-        if (accessTokenValidator.validateJwt()) {
+        if (!accessTokenValidator.validateJwt()) {
             log.warn("Access token validation failed");
             return false;
         }
