@@ -3,25 +3,27 @@ package com.wso2.openbanking.uk.common.core;
 import com.wso2.openbanking.uk.common.exception.GatewayHttpClientRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
-import com.wso2.openbanking.uk.common.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 /**
  * This class provides a simple http client implementation. It sends a SimpleHttpRequest and returns a
- * SimpleHttpResponse. It uses the java.net.http.HttpClient to send the request.
+ * SimpleHttpResponse. It uses the Apache HttpClient to send the request.
  */
 public class SimpleHttpClient implements SimpleAbstractHttpClient {
     private static final Log log = LogFactory.getLog(SimpleHttpClient.class);
-    private final HttpClient client;
+    private final CloseableHttpClient client;
 
     public SimpleHttpClient() {
-        client = HttpClient.newHttpClient();
+        client = HttpClients.createDefault();
     }
 
     /**
@@ -33,50 +35,43 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
      */
     @Override
     public SimpleHttpResponse send(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
-        HttpRequest.Builder requestBuilder = null;
-
-        try {
-            requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(request.getUrl()));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            String message = "Invalid URL: " + request.getUrl();
-            throw new GatewayHttpClientRuntimeException(StringUtil.sanitizeString(message), e);
-        }
+        HttpRequestBase httpRequest = createHttpRequest(request);
 
         // Set headers
         if (request.getHeaders() != null) {
-            request.getHeaders().forEach(requestBuilder::header);
+            request.getHeaders().forEach(httpRequest::addHeader);
         }
-
-        // Set the method and body
-        try {
-            if (request.getBody() != null) {
-                requestBuilder = requestBuilder.method(
-                        request.getMethod().name(),
-                        HttpRequest.BodyPublishers.ofString(request.getBody())
-                );
-            } else {
-                requestBuilder = requestBuilder.method(
-                        request.getMethod().name(),
-                        HttpRequest.BodyPublishers.noBody()
-                );
-            }
-        } catch (IllegalArgumentException e) {
-            String message = "Invalid method: " + request.getMethod();
-            throw new GatewayHttpClientRuntimeException(StringUtil.sanitizeString(message), e);
-        }
-
-        // Build the request
-        HttpRequest httpRequest = requestBuilder.build();
 
         // Send the request
-        HttpResponse<String> response = null;
-        try {
-            response = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+        try (CloseableHttpResponse response = client.execute(httpRequest)) {
+            HttpEntity entity = response.getEntity();
+            String responseBody = entity != null ? EntityUtils.toString(entity) : "";
+            return new SimpleHttpResponse(response.getStatusLine().getStatusCode(), responseBody);
+        } catch (IOException e) {
             throw new GatewayHttpClientRuntimeException("Error sending request", e);
         }
+    }
 
-        return new SimpleHttpResponse(response.statusCode(), response.body());
+    private HttpRequestBase createHttpRequest(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
+        switch (request.getMethod()) {
+            case GET:
+                return new HttpGet(request.getUrl());
+            case POST:
+                HttpPost postRequest = new HttpPost(request.getUrl());
+                if (request.getBody() != null) {
+                    postRequest.setEntity(new StringEntity(request.getBody(), "UTF-8"));
+                }
+                return postRequest;
+            case PUT:
+                HttpPut putRequest = new HttpPut(request.getUrl());
+                if (request.getBody() != null) {
+                    putRequest.setEntity(new StringEntity(request.getBody(), "UTF-8"));
+                }
+                return putRequest;
+            case DELETE:
+                return new HttpDelete(request.getUrl());
+            default:
+                throw new GatewayHttpClientRuntimeException("Unsupported HTTP method: " + request.getMethod());
+        }
     }
 }
