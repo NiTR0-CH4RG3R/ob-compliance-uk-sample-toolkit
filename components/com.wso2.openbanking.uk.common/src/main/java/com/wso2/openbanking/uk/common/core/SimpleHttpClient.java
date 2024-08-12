@@ -7,12 +7,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * This class provides a simple http client implementation. It sends a SimpleHttpRequest and returns a
@@ -53,25 +56,30 @@ public class SimpleHttpClient implements SimpleAbstractHttpClient {
     }
 
     private HttpRequestBase createHttpRequest(SimpleHttpRequest request) throws GatewayHttpClientRuntimeException {
-        switch (request.getMethod()) {
-            case GET:
-                return new HttpGet(request.getUrl());
-            case POST:
-                HttpPost postRequest = new HttpPost(request.getUrl());
-                if (request.getBody() != null) {
-                    postRequest.setEntity(new StringEntity(request.getBody(), "UTF-8"));
-                }
-                return postRequest;
-            case PUT:
-                HttpPut putRequest = new HttpPut(request.getUrl());
-                if (request.getBody() != null) {
-                    putRequest.setEntity(new StringEntity(request.getBody(), "UTF-8"));
-                }
-                return putRequest;
-            case DELETE:
-                return new HttpDelete(request.getUrl());
-            default:
-                throw new GatewayHttpClientRuntimeException("Unsupported HTTP method: " + request.getMethod());
+        try {
+            URI uri = new URIBuilder(request.getUrl()).build();
+            switch (request.getMethod()) {
+                case GET:
+                    return new HttpGet(uri);
+                case POST:
+                    HttpPost postRequest = new HttpPost(uri);
+                    if (request.getBody() != null) {
+                        postRequest.setEntity(new StringEntity(request.getBody(), "UTF-8"));
+                    }
+                    return postRequest;
+                case PUT:
+                    HttpPut putRequest = new HttpPut(uri);
+                    if (request.getBody() != null) {
+                        putRequest.setEntity(new StringEntity(request.getBody(), "UTF-8"));
+                    }
+                    return putRequest;
+                case DELETE:
+                    return new HttpDelete(uri);
+                default:
+                    throw new GatewayHttpClientRuntimeException("Unsupported HTTP method: " + request.getMethod());
+            }
+        } catch (URISyntaxException e) {
+            throw new GatewayHttpClientRuntimeException("Invalid URL syntax: " + request.getUrl(), e);
         }
     }
 }
