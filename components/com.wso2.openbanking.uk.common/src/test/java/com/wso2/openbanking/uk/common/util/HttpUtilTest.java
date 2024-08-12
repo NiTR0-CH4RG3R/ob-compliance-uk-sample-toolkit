@@ -73,9 +73,42 @@ public class HttpUtilTest {
      */
     @Test
     public void testExtractPathVariableSentAsLastSegment() {
-        String resource = "http://localhost:8080/resource";
+        String resource = "http://localhost:8080/resource/";
         String expected = "resource";
         String actual = HttpUtil.extractPathVariableSentAsLastSegment(resource);
         Assert.assertEquals(actual, expected);
+    }
+
+    @Test
+    public void testExtractBearerTokenWithValidToken() {
+        String validBearerToken = " Bearer   token ";
+        String expected = "token";
+
+        String actual = HttpUtil.extractBearerToken(validBearerToken);
+        Assert.assertEquals(actual, expected);
+    }
+
+    @Test
+    public void testExtractBearerTokenWithInvalidToken() {
+        String invalidBearer = "Bearer";
+
+        String actual = HttpUtil.extractBearerToken(invalidBearer);
+        Assert.assertNull(actual);
+
+        invalidBearer = "Bearerer token";
+        actual = HttpUtil.extractBearerToken(invalidBearer);
+        Assert.assertNull(actual);
+    }
+
+    @Test
+    public void testExtractBearerTokenWithNullToken() {
+        String actual = HttpUtil.extractBearerToken(null);
+        Assert.assertNull(actual);
+    }
+
+    @Test
+    public void testExtractBearerTokenWithEmptyToken() {
+        String actual = HttpUtil.extractBearerToken("");
+        Assert.assertNull(actual);
     }
 }

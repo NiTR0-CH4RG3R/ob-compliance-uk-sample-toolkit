@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.wso2.openbanking.uk.common.constants.HttpMethod;
+import com.wso2.openbanking.uk.common.exception.SimpleHttpClientRuntimeException;
 import com.wso2.openbanking.uk.common.model.SimpleHttpRequest;
 import com.wso2.openbanking.uk.common.model.SimpleHttpResponse;
 import org.testng.Assert;
@@ -105,5 +106,22 @@ public class SimpleHttpClientTest {
         );
         SimpleHttpResponse response = client.send(request);
         Assert.assertEquals(response.getStatusCode(), 200);
+    }
+
+    @Test
+    public void testSendInvalidURL() {
+        SimpleHttpClient client = new SimpleHttpClient();
+        SimpleHttpRequest request = new SimpleHttpRequest(
+                HttpMethod.GET,
+                "http://localhost/1232344.xml",
+                null,
+                null
+        );
+        try {
+            client.send(request);
+            Assert.fail("Expected SimpleHttpClientRuntimeException");
+        } catch (SimpleHttpClientRuntimeException e) {
+            Assert.assertEquals(e.getMessage(), "Error sending request");
+        }
     }
 }
