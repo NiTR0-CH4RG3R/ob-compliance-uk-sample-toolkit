@@ -299,7 +299,7 @@ public class DCRHandler implements OpenBankingAPIHandler {
                 );
             }
 
-            // Set the modified payload to the request context
+            // TODO : Remove this after creating the
             modifiedPayload = ServiceProviderUtil
                     .convertOBClientRegistrationRequest1JsonStringToISDCRPayload(modifiedPayload);
 
@@ -377,6 +377,7 @@ public class DCRHandler implements OpenBankingAPIHandler {
                 );
             }
 
+            // TODO : Remove this after implementing the identity module.
             String modifiedPayload = ServiceProviderUtil.convertISDCRResponseJsonStringToOBClientRegistrationResponse1(
                     payload
             );
